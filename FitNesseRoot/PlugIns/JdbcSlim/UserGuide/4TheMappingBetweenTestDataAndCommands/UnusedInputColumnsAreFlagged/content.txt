@@ -1,0 +1,26 @@
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+Unused Input column names like [AGE] below are flagged as fail.
+In such a case either the command should be adjusted or the column should be removed.
+
+!include -c .FitNesse.SuiteAcceptanceTests.SuiteSlimTests.SetUp
+
+!| script                          |
+|given Jdbc Slim test page|TestPage|
+|and content is                    |!-
+
+!|SQLCommand|TestDatabase|select Profession from TestData where NAME= '%NAME%' and CITY= '%CITY%'|
+|NAME       |CITY        |AGE                            |PROFESSION?                            |
+|James      |London      |43                             |                                       |
+|Bert       |Washington  |50                             |                                       |
+|Kim        |New York    |60                             |                                       |
+
+-! |                                                          
+|test results for page|TestPage        |should contain       |right, 2 wrong, 3 ignored, 0 exceptions<|
+|ensure               |content contains|span class="fail">AGE                                         |
+|reject               |content contains|span class="error"                                            |
+|check                |request page    |TestPage?executionLog|200                                     |
+|show                 |content                                                                        |
+
+
+!include -c .FitNesse.SuiteAcceptanceTests.TearDown

@@ -1,0 +1,64 @@
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+Some jdbc driver support multiple commands separated with ; in a single execution.
+
+!*> To avoid side effects we execute the test in a transaction
+!|Script|SQLCommand|TransactionDatabase|
+|open Connection                       |
+|execute|begin transaction             |
+
+*!
+
+!3 Two updates in one command
+
+!|Define Properties        |CommandChain                                                                                                     |
+|key                       |value                                                                                                            |
+|.include                  |TransactionDatabase                                                                                              |
+|#                         |Define how many update counts are expected, unluckily H2 always returns only the count from the first command :(|
+|jdbcMaxGetUpdateCountloops|2                                                                                                                |
+
+There are 3 matching names and one matching ID. Count should be 3, 1 but H2 reports 3, 3
+!|  SQLCommand|CommandChain|update TestData set City='%NewCITY%' where NAME like'%Name%';update TestData set City='%NewCITY%' where ID ='%ID%'|
+|ID           |Name        |NewCITY                                                   |Count?                                                 |
+|3            |B%          |*Madrid*                                                  |3, 3                                                   |
+
+
+Changing the order of the commands we get 1, 1 expected is 1, 3
+!|  SQLCommand|CommandChain|update TestData set City='%NewCITY%' where ID ='%ID%';update TestData set City='%NewCITY%' where NAME like'%Name%'|
+|ID           |Name        |NewCITY                                                    |Count?                                                |
+|4            |B%          |**Sydney**                                                 |1, 1                                                  |
+
+
+!3 Verify all updates
+!|SQLCommand|CommandChain|select * from TestData|Query                |
+|ID         |Name        |Phone                 |City      |Profession|
+|1          |Bill        |12345                 |**Sydney**|Doctor    |
+|2          |Ben         |6789                  |**Sydney**|Artist    |
+|3          |Tom         |4567890               |*Madrid*  |Milkman   |
+|4          |Till        |332211                |**Sydney**|Senator   |
+|5          |Sarah       |999999                |Paris     |Hero      |
+|6          |James       |5432                  |London    |Butler    |
+|7          |Bert        |432                   |**Sydney**|President |
+|8          |Kim         |1                     |New York  |Banker    |
+
+
+!*> Rollback the change to not impact future tests
+
+!|Script|SQLCommand|TransactionDatabase|
+|open Connection                       |
+|execute|rollback                      |
+|close Connection                      |
+
+!4 Check that the rollback worked
+!|SQLCommand|StartupDatabase|select * from TestData|Query                |
+|ID         |Name           |Phone                 |City      |Profession|
+|1          |Bill           |12345                 |Berlin    |Doctor    |
+|2          |Ben            |6789                  |Denver    |Artist    |
+|3          |Tom            |4567890               |Seoul     |Milkman   |
+|4          |Till           |332211                |Berlin    |Senator   |
+|5          |Sarah          |999999                |Paris     |Hero      |
+|6          |James          |5432                  |London    |Butler    |
+|7          |Bert           |432                   |Washington|President |
+|8          |Kim            |1                     |New York  |Banker    |
+
+*!

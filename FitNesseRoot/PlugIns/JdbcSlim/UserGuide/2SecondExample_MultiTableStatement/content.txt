@@ -1,0 +1,29 @@
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+To prepare business data often more than one table must be updated or data inserted into multiple tables.
+But for a business user this is often not important. Having said that the requirements should hide this technical detail.
+
+This can be done with Jdbc Slim.  
+
+!3 The technical implementation is moved into a Start Up and Tear Down page:
+
+!include -c >SqlStartUp
+
+!3 The business defines the requirements in a table 
+
+
+!|Get the name and phone number for id|
+|id       |name?        |phone?       |
+|2        |Ben          |>0           |
+|4        |Till         |>100         |
+|3        |Tom          |>10          |
+|2        |=~/Be/       |>5           |
+  
+
+
+!include -c >SqlTearDown
+
+See also: 7UsingSqlInScriptsAndScenarios
+
+!contents -R2 -g -p -f -h
+

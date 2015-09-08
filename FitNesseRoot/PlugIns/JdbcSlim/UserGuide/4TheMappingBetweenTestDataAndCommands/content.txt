@@ -1,0 +1,34 @@
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+The Header line of each SQL Command Table contains input and output columns.
+Like in a [[!-DecisionTable-!][.FitNesse.UserGuide.WritingAcceptanceTests.SliM.DecisionTable]] output columns are marked with a question mark.
+All columns without a question mark are input columns.
+
+If the table has one ore more input columns the SQL command is executed '''once for each line''' in the table and the command must return '''exactly one''' result row. 
+
+Before each execution a string replacement happens. Any occurrence of a column name between percent signs is replaced with the actual value of the column.
+ 
+ 
+Lets take an example. 
+
+!| SQLCommand|TestDatabase|select City from TestData where ID ='%ID%'|
+|ID          |CITY?                                                  |
+|2           |Denver                                                 |
+|5           |Paris                                                  |
+
+The above table has one input column ID and one output column CITY.
+For the first line the code: ''select City from TestData where ID ='2' '' will be executed and in the result set a column CITY is expected and the value is compared to 'Denver'
+For the first line the code: ''select City from TestData where ID ='5' '' will be executed and in the result set a column CITY is expected and the value is compared to 'Paris'
+
+If the table has no input columns the SQL command is executed only once. 
+The result set can have more than one row and is compared against all rows in the table.
+
+!| SQLCommand|TestDatabase|select ID, City from TestData where ID in ('2','5')|
+|ID?         |CITY?                                                           |
+|2           |Denver                                                          |
+|5           |Paris                                                           |
+
+Further Reading:
+!contents -R2 -g -p -f -h
+
+  

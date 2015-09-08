@@ -1,0 +1,26 @@
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+!|Define Properties|FindTestUserIDs                                   |
+|key               |value                                             |
+|.include          |TransactionDatabase                               |
+|cmd               |select ID, NAME from TestData where Name ='%NAME%'|
+
+!|Define Properties|CheckInitalCityOfUsers                    |
+|key               |value                                     |
+|.include          |TransactionDatabase                       |
+|cmd               |select City from TestData where ID ='%ID%'|
+
+!|Define Properties|RelocateUserToNewCity                                |
+|key               |value                                                |
+|.include          |TransactionDatabase                                  |
+|cmd               |update TestData set City='%NewCITY%' where ID ='%ID%'|
+
+!|Define Properties|CheckFinalCityOfUsers                     |
+|key               |value                                     |
+|.include          |TransactionDatabase                       |
+|cmd               |select City from TestData where ID ='%ID%'|
+
+To avoid side effects we execute the test in a transaction
+!|Script|SQLCommand|TransactionDatabase|
+|open Connection                       |
+|execute|begin transaction             |

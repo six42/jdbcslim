@@ -1,0 +1,39 @@
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+If your application under test already creates a database connection and you want or must use it also in FitNesse tests than this can be done.
+You might also want to use this feature if your connection would require further parameters.
+
+Just create an object from java.sql.Connection via a FitNesse Script and assign it to a FitNesse Symbol.
+than call addConnection from SQLCommand  in a script and give the connection a name.
+Use this name in future SQL configurations as DBConnection and your connection object will be used. 
+
+Remember to close the connection once it is not required any more.
+
+
+!|Define Properties|Dummy|
+|key               |value|
+|CMD               |     |
+
+!|Script                                                                                |
+|# Your code here to create a Connection Object                                         |
+|start         |SQLCommand             |Dummy                                           |
+|$Cnn=         |testHomeMadeConnection;|jdbc:relique:csv:${TestDbPath}|not used|not used|
+|# Now add the connection symbol to be able to use it                                   |
+|addConnection;|ConnectionName         |$Cnn                                            |
+
+
+
+!|Define Properties|UseHomeMadeConnection|
+|key               |value                |
+|DBConnection      |ConnectionName       |
+|CMD               |                     |
+ 
+!| SQLCommand|UseHomeMadeConnection|select ID, NAME from TestData where Name ='%NAME%'|
+|ID?         |NAME                                                                    |
+|2           |Ben                                                                     |
+|5           |Sarah                                                                   |
+
+!3 Close the connection and remove it from the list of available connections
+!|Script: SQLCommand|UseHomeMadeConnection|
+|closeConnection                          |
+|removeConnection   |ConnectionName       |

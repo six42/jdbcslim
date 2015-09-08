@@ -1,0 +1,21 @@
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+|import                 |
+|six42.fitnesse.jdbcslim|
+
+!| define table type|
+|SQLCommand|as Table|
+
+!path ${LibInstallPath}csvjdbc-1.0-18.jar
+
+!|Define Properties|TestDatabase                  |
+|key               |value                         |
+|jdbcDriver        |org.relique.jdbc.csv.CsvDriver|
+|DBURL             |jdbc:relique:csv:${TestDbPath}|
+|DBUSER            |na                            |
+|DBPASSWORD        |na                            |
+|CMD               |                              |
+
+!|Define Properties|TransactionDatabase|
+|key               |value              |
+|.include          |TestDatabase       |

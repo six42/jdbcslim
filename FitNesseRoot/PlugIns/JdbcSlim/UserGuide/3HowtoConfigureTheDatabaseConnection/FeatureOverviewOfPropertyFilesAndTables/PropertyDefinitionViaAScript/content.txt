@@ -1,0 +1,58 @@
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+!2 !help
+
+!|Script     |Define Properties|ScriptDefinition |
+|begin table                                     |
+|setKey      |foo                                |
+|setValue    |bar                                |
+|show        |echo                               |
+|execute                                         |
+|setKey      |foooo                              |
+|setValue    |baaar                              |
+|show        |echo                               |
+|execute                                         |
+|end table                                       |
+|$ScriptEcho=|echo                               |
+|check       |echo             |$ScriptEcho      |
+|show        |show             |ScriptDefinition |
+|start       |Define Properties|ScriptDefinition2|
+|show        |echo                               |
+|check       |echo             |=~/null/         |
+
+!|Define Properties|TopDefinition3                      |
+|key               |value                               |
+|cmd               |myCommand with %NAME%, %CITY%, %AGE%|
+|DEBUG             |                                    |
+|COMMAND           |YES                                 |
+|multiLine2                                             |!-Hello
+World-!| 
+
+!|Script|Define Properties|                                                                |
+|show   |show             |ScriptDefinition                                                |
+|show   |getDefinition    |TopDefinition3                                                  |
+|show   |show             |TopDefinition3                                                  |
+|check  |show             |UndefinedDefinition|ERROR:No Definitions exists under this name.|
+
+
+
+!|Define Properties|SymbolDefinition                                                                     |
+|key               |value                                |echo?                                          |
+|cmd               |myCommand with %NAME%, %CITY%, %AGE%]|$E=                                            |
+|DEBUG             |$E                                   |DEBUG=cmd=myCommand with %NAME%, %CITY%, %AGE%]|
+|COMMAND           |$YES                                 |COMMAND=$YES                                   |
+|SORT              |YES                                  |$S=                                            |
+ 
+
+
+!| Table: SheetCommandBase|TopDefinition3      |      |$S      |
+|Key?<1                   |Value?                              |
+|cmd                      |myCommand with %NAME%, %CITY%, %AGE%|
+|command                  |YES                                 |
+|debug                    |                                    |
+|multiline2                                                    |!-Hello
+World-!| 
+|sort|YES|
+
+
+

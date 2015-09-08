@@ -1,0 +1,34 @@
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+!2 Download the latest Jdbc Slim library from github.com\six42\jdbcslim
+!define JdbcSlimLib {jdbcslim.jar}
+
+!2  Installation Path 
+Adujust the below path if you installed at a different location
+This path is relative to the folder in which FitNesse got started 
+!define LibInstallPath {plugins\jdbcslim\}
+
+The Jdbc Slim Library - always required
+!path ${LibInstallPath}${JdbcSlimLib}
+
+!2 Further dependencies
+This is required to support encryption. It can be downloaded from https://github.com/dbfit/dbfit/releases/tag/v3.2.0
+!path ${LibInstallPath}commons-codec-1.9.jar
+!path ${LibInstallPath}dbfit-core-3.2.0.jar
+
+See the SuiteSetup pages for driver specific setup. 
+JDBC driver used for the samples. Not required if you use a different JDBC driver
+${LibInstallPath}h2-1.4.188.jar
+${LibInstallPath}csvjdbc-1.0-18.jar
+
+!2 User Manual  and Test Suite
+To access the user manual and run the examples copy all Jdbc Slim Fitnesse pages from github to !-FitNesseRoot\PlugIns-!
+Copy from github the folder plugins\jdbcslim\TestDB to plugins\jdbcslim\TestDB in your installation
+!define TestDbPath (${LibInstallPath}TestDB\)
+
+Execute the suite on .PlugIns.JdbcSlim
+
+
+!2 To build your own test pages 
+1. include this page on the root page of your suite 
+2. include the SuiteSetup page or a page with similar content in the setup of your suite  

@@ -1,0 +1,34 @@
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+Some tables have many columns.
+Inserting new data would require huge tables on the Wiki page.
+But for many tests only some columns are essential.
+The same is true for stored procedures with many parameters. A single test should focus on one or two parameters.
+To keep the tests focused defaults can be defined for input columns.
+
+!|Define Properties|myDefaults|
+|key                    |value     |
+|City                   |Berlin    |
+
+ 
+!|Define Properties|SelectByCityAndName                                           |
+|key                    |value                                                         |
+|.include               |TestDatabase                                                  |
+|cmd                    |select * from TestData where Name ='%Name%' and City ='%City%'|
+|#                      |Add above defined defaults to the command definition          |
+|InputDefaults          |myDefaults                                                    |
+
+!3 Table provides City as input - default will not be used
+!| SQLCommand|SelectByCityAndName          |
+|Name        |City  |ID?|Phone?|Profession?|
+|James       |London|   |      |           |
+
+!3 Table doesn't provides City as input - default will be used and a matching record found
+!| SQLCommand|SelectByCityAndName         |
+|Name        |City?|ID?|Phone?|Profession?|
+|Bill        |     |   |      |     |     |
+
+!3 Table doesn't provides City as input - default will be used but no matching record found
+!| comment:TODO SQLCommand|SelectByCityAndName         |
+|Name                |City?|ID?|Phone?|Profession?|
+|Ben                 |     |   |      |     |     |

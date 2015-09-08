@@ -1,0 +1,44 @@
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+!contents -R2 -g -p -f -h
+
+!include -c .FitNesse.SuiteAcceptanceTests.ScenarioLibrary
+
+
+!define Header { !define TestLibInstallPath (${LibInstallPath}) 
+!define JdbcSlimLib (${JdbcSlimLib})!-
+#Standard Test Page header
+!define TEST_SYSTEM {slim}
+
+!path ${TestLibInstallPath}${JdbcSlimLib}
+!path ${TestLibInstallPath}csvjdbc-1.0-18.jar
+!path ${TestLibInstallPath}dbfit-core-3.2.0.jar
+
+
+|import                 |
+|six42.fitnesse.jdbcslim|
+
+!| define table type|
+|SQLCommand|as Table|
+
+
+!|DefineProperties|TestDatabase                  |
+|key              |value                         |
+|jdbcDriver       |org.relique.jdbc.csv.CsvDriver|
+|DBURL                                           |jdbc:relique:csv:-!${TestDbPath}!-|
+|DBUSER           |na                            |
+|DBPASSWORD       |na                            |
+
+#Added test specific content
+
+-!}
+
+!|scenario|given Jdbc Slim test page|page |
+|$IT=     |echo                     |@page|
+
+
+!|scenario |and content is|content                         |
+|given page|$IT           |with content|${Header}  @content|
+|make      |$IT           |a test page                     |
+
+

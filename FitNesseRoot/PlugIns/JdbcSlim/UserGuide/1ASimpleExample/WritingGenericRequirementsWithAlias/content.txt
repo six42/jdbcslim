@@ -1,0 +1,61 @@
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+Requirements should not contain SQL code:
+
+ * Not everybody understands SQL commands. But you want that the requirements can be understood by anybody.
+ * The SQL Code can change if a different implementation is chosen. But the requirements should not change in this case. They should be independent of the implementation.
+ 
+This can be achieved easily with JdbcSlim.
+
+Lets rewrite the first example with Tom and Sarah but write it in less technical terms.   
+The SQL Code can be moved into a seperate SetUp page.
+
+!3 1 Preparing test data
+
+Find the ID of users named Ben and Sarah which should move. 
+We store the Id of the users in a Slim Symbol '$TestID' for future reference.
+
+!|Script|SQLCommand|CheckInitalCityOfUsers|
+|$CICoU=|get fixture                      |
+
+!|Define alias                   |
+|Check First City Of Users|$CICoU|
+
+
+!| SQLCommand|FindTestUserIDs|
+|ID?         |NAME           |
+|$TestID=    |Ben            |
+|$TestID2=   |Sarah          |
+
+Before we proceed we validate that Ben and Sarah still live in the old Cities: Denver and Paris
+
+!| Check First City Of Users|
+|ID            |CITY?       |
+|$TestID       |Denver      |
+|$TestID2      |Paris       |
+
+!| SQLCommand|CheckInitalCityOfUsers|
+|ID          |CITY?                 |
+|$TestID     |Denver                |
+|$TestID2    |Paris                 |
+
+!3 Execution some business functions
+
+Here calls to your business code will go.
+A simple update statement which can do the job is given below.
+!|  SQLCommand|RelocateUserToNewCity|
+|ID                   |NewCITY              |
+|$TestID              |HongKong             |
+|$TestID2             |Tokyo                |
+
+
+!3 Validating the impact on the test data
+
+Finally we check that Ben now lives in Hong Kong and Sarah in Tokyo
+
+!| SQLCommand|CheckFinalCityOfUsers|
+|ID          |CITY?                |
+|$TestID     |HongKong             |
+|$TestID2    |Tokyo                |
+
+!contents -R2 -g -p -f -h

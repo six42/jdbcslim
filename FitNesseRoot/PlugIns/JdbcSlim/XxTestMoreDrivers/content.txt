@@ -1,0 +1,13 @@
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+By default the jdbc slim UserGuide is tested against the H2 database driver.
+But testing the same tests with other drivers is very simple.
+
+!3 Steps to test the jdbcSlim framework with other drivers:
+
+* Add a child page to this page which is a symbolic link to the UserGuide
+* To the child page at a >SuiteSetUp and a >ScenarioLibrary page
+  On both pages the path to the driver, the driver class and the dburl must be configured
+
+See samples below:   
+!contents -R2 -g -p -f -h

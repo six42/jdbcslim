@@ -1,0 +1,32 @@
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+!3 The Scenario with two execute statements
+!|Scenario|Get The Name        |name |and phone number|phone|for id|id|
+|execute  |select Name from TestData where ID = '@id'                 |
+|show     |success                                                    |
+|show     |rawResult                                                  |
+|show     |resultSheet                                                |
+|$name=   |getColumnValueByName|NAME |                                |
+|#                                                                    |
+|execute  |select * from TestData where ID = '@id'                    |
+|show     |success                                                    |
+|show     |rawResult                                                  |
+|show     |resultSheet                                                |
+|$phone=  |getColumnValueByName|Phone|                                |
+
+
+
+!3 Define connection details and open a connection
+
+!|Define Properties|ScriptDatabase        |
+|key               |value                 |
+|.include          |TestDatabase          |
+|cmd               |select * from TestData|
+
+!|Script|SQLCommand|ScriptDatabase|
+|openConnection                   |
+
+
+
+
+!contents -R2 -g -p -f -h

@@ -1,0 +1,9 @@
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+
+If the query returns many rows but you just want to check some of them and want to ignore the others use the SUBQUERY flag.
+
+!| SQLCommand|TestDatabase|select ID, Name from TestData|SORT SUBQUERY|
+|ID?>        |NAME?                                                   |
+|5           |Sarah                                                   |
+|3           |Tom                                                     |

@@ -1,0 +1,44 @@
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+The below only applies to commands without any input values. Only these can return more than one row.
+
+The SQL code should sort the result set so that it matches the expected values.  If this is not possible as it is the output of a stored procedure the fixture can sort the actual result set. Expected values are never sorted. You have to provide them already in the order you expect them.
+
+Use the symbol < to sort ascending  and > to sort descending. Add this symbol to the end of the column name in the header. Finally add the keyword SORT as third parameter to the SQL command. Or add SORT as a key into a configuration property.
+
+SQL Query  sorted ascending on ID
+
+!| SQLCommand|TestDatabase|select ID,Name from TestData where ID in('3','5')|SORT|
+|ID?<        |NAME?                                                              |
+|3           |Tom                                                                |
+|5           |Sarah                                                              |
+
+SQL Query  sorted descending on ID
+
+!| SQLCommand|TestDatabase|select ID, Name from TestData where ID in('3','5')|SORT|
+|ID?>        |NAME?                                                               |
+|5           |Sarah                                                               |
+|3           |Tom                                                                 |
+
+SQL Query  sorted descending on Name
+
+!| SQLCommand|TestDatabase|select ID,Name from TestData where Name in('Tom','Sarah')|SORT|
+|ID?         |NAME?>                                                                     |
+|3           |Tom                                                                        |
+|5           |Sarah                                                                      |
+
+SQL Query  sorted first descending on City and second ascending on Name
+adding the QUERY tag allows to omit the question mark at each header column name.
+
+!| SQLCommand|TestDatabase|select * from TestData|SORT   QUERY      |
+|ID          |City>       |Name<                 |Phone  |Profession|
+|7           |Washington  |Bert                  |432    |President |
+|3           |Seoul       |Tom                   |4567890|Milkman   |
+|5           |Paris       |Sarah                 |999999 |Hero      |
+|8           |New York    |Kim                   |1      |Banker    |
+|6           |London      |James                 |5432   |Butler    |
+|2           |Denver      |Ben                   |6789   |Artist    |
+|1           |Berlin      |Bill                  |12345  |Doctor    |
+|4           |Berlin      |Till                  |332211 |Senator   |
+
+!contents -R2 -g -p -f -h
