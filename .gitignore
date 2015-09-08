@@ -42,5 +42,8 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+#class files can be build
+classes/*
+
 # Jar files should only go into releases
 *.jar
