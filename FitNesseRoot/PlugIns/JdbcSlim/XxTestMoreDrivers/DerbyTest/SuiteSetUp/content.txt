@@ -16,7 +16,6 @@
 !|Define Properties|TestDatabase                                                                           |
 |key               |value                                                                                  |
 |jdbcDriver        |org.apache.derby.jdbc.EmbeddedDriver                                                   |
-|#DBURL            |jdbc:derby:D:\user\Stef\dev\github\jdbcslim\plugins\jdbcslim\TestDb\derbyDB;create=true|
 |DBURL             |jdbc:derby:memory:myDB;create=true                                                     |
 |DBUSER            |na                                                                                     |
 |DBPASSWORD        |na                                                                                     |
