@@ -14,12 +14,12 @@ Remember to close the connection once it is not required any more.
 |key               |value|
 |CMD               |     |
 
-!|Script                                                                                |
-|# Your code here to create a Connection Object                                         |
-|start         |SQLCommand             |Dummy                                           |
-|$Cnn=         |testHomeMadeConnection;|jdbc:relique:csv:${TestDbPath}|not used|not used|
-|# Now add the connection symbol to be able to use it                                   |
-|addConnection;|ConnectionName         |$Cnn                                            |
+!|Script                                                                        |
+|# Your code here to create a Connection Object                                 |
+|start         |SQLCommand             |Dummy                                   |
+|$Cnn=         |testHomeMadeConnection;|jdbc:h2:mem:h2db;DB_CLOSE_DELAY=-1|na|na|
+|# Now add the connection symbol to be able to use it                           |
+|addConnection;|ConnectionName         |$Cnn                                    |
 
 
 

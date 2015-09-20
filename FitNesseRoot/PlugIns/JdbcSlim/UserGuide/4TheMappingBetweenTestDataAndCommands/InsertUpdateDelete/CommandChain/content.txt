@@ -11,22 +11,20 @@ Some jdbc driver support multiple commands separated with ; in a single executio
 
 !3 Two updates in one command
 
-!|Define Properties        |CommandChain                                                                                                     |
-|key                       |value                                                                                                            |
-|.include                  |TransactionDatabase                                                                                              |
-|#                         |Define how many update counts are expected, unluckily H2 always returns only the count from the first command :(|
-|jdbcMaxGetUpdateCountloops|2                                                                                                                |
+!|Define Properties|CommandChain       |
+|key               |value              |
+|.include          |TransactionDatabase|
 
-There are 3 matching names and one matching ID. Count should be 3, 1 but H2 reports 3, 3
+There are 3 matching names and one matching ID. Count should be 3, 1 but H2 reports only the first update 3
 !|  SQLCommand|CommandChain|update TestData set City='%NewCITY%' where NAME like'%Name%';update TestData set City='%NewCITY%' where ID ='%ID%'|
-|ID           |Name        |NewCITY                                                   |Count?                                                 |
-|3            |B%          |*Madrid*                                                  |3, 3                                                   |
+|ID           |Name        |NewCITY                                |Count?                              |Count2?                              |
+|3            |B%          |*Madrid*                               |3                                   |1                                    |
 
 
-Changing the order of the commands we get 1, 1 expected is 1, 3
+Changing the order of the commands we get 1  expected is 1, 3
 !|  SQLCommand|CommandChain|update TestData set City='%NewCITY%' where ID ='%ID%';update TestData set City='%NewCITY%' where NAME like'%Name%'|
-|ID           |Name        |NewCITY                                                    |Count?                                                |
-|4            |B%          |**Sydney**                                                 |1, 1                                                  |
+|ID           |Name        |NewCITY                                 |Count?                              |Count2?                             |
+|4            |B%          |**Sydney**                              |1                                   |3                                   |
 
 
 !3 Verify all updates

@@ -8,8 +8,16 @@ public enum ConfigurationParameters {
   dbConnection,
   jdbcDriver,
   dbUrl,
+  dbProperties,
   dbUser,
   dbPassword,
-  jdbcMaxGetUpdateCountloops,
-  endPlaceholder;
+  dbAutoCommit,
+  outputNullString,
+  jdbcMaxloops,
+  QUERY,
+  SORT,
+  SUBQUERY,
+  outputFlagUnusedInputColumns, 
+  outputFlagExtraOutputColumns, 
+  DEBUG
 }

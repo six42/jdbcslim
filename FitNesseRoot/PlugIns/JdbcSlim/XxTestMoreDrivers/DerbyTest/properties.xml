@@ -7,7 +7,10 @@
 <RecentChanges/>
 <Refactor/>
 <Search/>
-<Test/>
+<Suite/>
+<SymbolicLinks>
+<Tests>.PlugIns.JdbcSlim.UserGuide</Tests>
+</SymbolicLinks>
 <Versions/>
 <WhereUsed/>
 </properties>

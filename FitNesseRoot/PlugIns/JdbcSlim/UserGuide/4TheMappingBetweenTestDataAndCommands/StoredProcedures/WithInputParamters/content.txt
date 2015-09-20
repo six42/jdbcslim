@@ -8,24 +8,36 @@
 
 *!
 
-!3 Input Paramters are not jet supported, only a hardcoded test version
+!3 Input Parameters
 
-!|Define Properties|StoredProcedures   |
-|key               |value              |
-|.include          |TransactionDatabase|
+To use Input Parameters you have to define a tuple of 3-4 values for each input column.
+The values are separated with a ":".
+1. Flag for Input or Output Parameter: I* = input parameter, O* = output parameter, I*O* = input and output parameter 
+2. Position in the statement, the first parameter has number 1
+3. Integer number of SQL Type see the jdk java documentation or [[look here][http://grepcode.com/file/repository.grepcode.com/java/root/jdk/openjdk/7u40-b43/java/sql/Types.java#Types.0BIT]]
+4. The scale of the data type, might be required for VARCHAR, DECIMAL, etc. See the jdbc documentation of your database system. This flag is optional  
 
+!4 These flags are defined in a separate Properties definition.
 
 !|Define Properties|inParameters|
 |key               |value       |
-|In                |1:0:0       |
+|FILL              |I:3:12:0    |
+|No                |in:1:8:0    |
+|inStr             |Input:1:12  |
+|c                 |i:2:4       |
 
-!|  SQLCommand|StoredProcedures|select SQRT(?) as root|dbQueryParameters=inParameters|
-|No           |root?                                                                 |
-|9.0          |3.0                                                                   |
+!4 Link this definition to the query with the '''dbQueryParameters''' key
+To avoid that the input columns are flageed red (as they are not used in string command replacements) add also the flag '''outputFlagUnusedInputColumns=false'''
+   
+!|  SQLCommand|TransactionDatabase|select SQRT(?) as root|dbQueryParameters=inParameters outputFlagUnusedInputColumns=false|
+|No           |root?                                                                                                       |
+|9.0          |3.0                                                                                                         |
+|16.0         |4.0                                                                                                         |
 
-!|  SQLCommand|StoredProcedures|select LPAD(?, 7,'*') as myString|dbQueryParameters=inParameters|
-|No           |myString?                                                                        |
-|9.0          |****9.0                                                                          |
+!|  SQLCommand|TransactionDatabase|select LPAD(?, ?, ?) as myString|dbQueryParameters=inParameters outputFlagUnusedInputColumns=false|
+|inStr        |c                  |FILL                            |myString?                                                        |
+|xYz          |7                  |*                               |****xYz                                                          |
+|ABC          |5                  |-                               |--ABC                                                            |
 
                                                              |
 

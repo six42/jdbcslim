@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.sql.*;
-import java.sql.Types;
 
 public class SQLCommand extends SheetCommandBase {
 
@@ -18,8 +17,10 @@ public class SQLCommand extends SheetCommandBase {
 	private Connection dbConnection;
   private boolean mustCloseConnection;
 	static private Map<String, Connection> theConnections = new HashMap<String, Connection>();
-	
-	private Integer maxGetUpdateloops;
+
+	private Map<String, String> rowValues = new HashMap<String, String>(); 
+
+ 	private Integer cacheMaxLoops;
 	
 	public SQLCommand(String configurationOptions, String rawCommand,  String outputFormatOptions) throws FileNotFoundException, IOException{
 		super(configurationOptions, rawCommand, outputFormatOptions);
@@ -33,8 +34,23 @@ public class SQLCommand extends SheetCommandBase {
 		super(configurationOptions);
 	}
 
+  @Override
+  public void reset() {
+    rowValues = new HashMap<String, String>();
+  }
 
-	
+  @Override
+  public void set(String columnName, String value) {
+    //keys from Properties are always lower case
+    rowValues.put(columnName.toLowerCase(), value);
+  }
+
+  @Override
+  public String get(String columnName) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+  
  
 
 	@Override
@@ -48,7 +64,6 @@ public class SQLCommand extends SheetCommandBase {
 				rawResult = null;
 			} catch (SQLException e) {
 			  System.err.println("Got Exception in SQLCommand dbExecute:" + e.getMessage());
-				e.printStackTrace();
 				success = false;
 				rawResult = "Database execution failed:" + e.getMessage();
 				resultSheet = null;
@@ -62,7 +77,6 @@ public class SQLCommand extends SheetCommandBase {
 	}
 
 	private List<List<String>> dbExecute(String sqlCommand) throws SQLException{
-		ResultSet rs;
 		Statement stmt;
 		CallableStatement cstmt = null;
 		boolean resultsAvailable;
@@ -76,37 +90,40 @@ public class SQLCommand extends SheetCommandBase {
     
     String parameterName = Properties().getPropertyOrDefault(ConfigurationParameters.dbQueryParameters, "");
     if (!parameterName.isEmpty()){
-      PropertiesLoader queryParameters = null;
-      queryParameters = new PropertiesLoader();
-        try {
-          queryParameters.loadFromDefintionOrFile(parameterName );
-        } catch (FileNotFoundException e) {
-          throw new RuntimeException("The db query parameters (" + parameterName + ") could not be loaded: " + e.getMessage() );
-        } catch (IOException e) {
-          throw new RuntimeException("The db query parameters (" + parameterName + ") could not be loaded: " + e.getMessage() );
-        }
+        PropertiesLoader queryParameters = Properties().getSubProperties(parameterName);
         cstmt = dbConnection.prepareCall(sqlCommand);
         paramterList = queryParameters.toTable();
         //Skip the header start i at 1
         for( int i =1 ; i < paramterList.size(); i++){
           try{
-            String [] paramValues = paramterList.get(i).get(1).split(":");           
-            int parameterIndex = paramValues.length < 1 ? 0 : Integer.parseUnsignedInt( paramValues[0]);
-            int sqlType = paramValues.length < 2 ? 0 : Integer.parseInt( paramValues[1]);
-            int scale = paramValues.length < 3 ? 0 : Integer.parseUnsignedInt( paramValues[2]);
+            String key = paramterList.get(i).get(0);
+            String [] paramValues = paramterList.get(i).get(1).split(":");
+            boolean inParameter = paramValues.length < 1 ? false : paramValues[0].toUpperCase().contains("I");
+            boolean outParameter = paramValues.length < 1 ? false : paramValues[0].toUpperCase().contains("O");
+            int parameterIndex = paramValues.length < 2 ? 0 : Integer.parseUnsignedInt( paramValues[1]);
+            int sqlType = paramValues.length < 3 ? 0 : Integer.parseInt( paramValues[2]);
+            int scale = paramValues.length < 4 ? -1 : Integer.parseUnsignedInt( paramValues[3]);
 
-            if (sqlType == 0){ /*TODO */ cstmt.setObject(parameterIndex, 9.0); }
-            else if(scale == 0)         cstmt.registerOutParameter(parameterIndex, sqlType);
-            else         cstmt.registerOutParameter(parameterIndex, sqlType, scale);
-
+            if (inParameter && rowValues.containsKey(key)){ 
+              if(scale == -1)cstmt.setObject(parameterIndex, rowValues.get(key), sqlType); 
+              else cstmt.setObject(parameterIndex, rowValues.get(key), sqlType, scale);
+              cstmt.setObject(parameterIndex, rowValues.get(key));
+              }
+            if(outParameter){
+              if(scale == -1)  cstmt.registerOutParameter(parameterIndex, sqlType);
+              else         cstmt.registerOutParameter(parameterIndex, sqlType, scale);
+            }
           }catch( NumberFormatException e){
-            System.out.println("Failed processing Query Parameter:"+ paramterList.get(i).get(0) + "=" + paramterList.get(i).get(1) + " ->" + e.getMessage() ) ;
+            throw new RuntimeException("Failed processing Query Parameter:"+ paramterList.get(i).get(0) + "=" + paramterList.get(i).get(1), e);
+          }catch( SQLException e){
+            throw new RuntimeException("Failed setting Query Parameter:"+ paramterList.get(i).get(0) + "=" + paramterList.get(i).get(1), e);
           }
 
         }   
-
+        long startTime = System.currentTimeMillis();
         resultsAvailable = cstmt.execute();
         stmt = cstmt;
+        long endTime = System.currentTimeMillis();
 
     }else{
       // Statement without DB Parameters
@@ -115,61 +132,36 @@ public class SQLCommand extends SheetCommandBase {
 
     }
     
-    String updateCountStr;
-    if (!updateCountHeaderName.equalsIgnoreCase(disabledValue)){
-      updateCountStr = getUpdateCount(stmt);
-    }else{ 
-      updateCountStr ="";
-    }
-			
+    
 		
-		if (Properties().isDebug()) System.out.println("result available:"+ resultsAvailable + ":" + sqlCommand) ;
-    while (resultsAvailable){
-      rs = stmt.getResultSet();
-      convertRsIntoTable(resultTable, rs);
-      resultsAvailable = stmt.getMoreResults();
-      if (Properties().isDebug()) System.out.println("result available:"+ resultsAvailable );
-    }
+    resultTable =getResultSetsAndUpdateCounts(stmt, resultsAvailable,  updateCountHeaderName);
+		
 
-    // Get Identity columns
-    if(!Properties().getPropertyOrDefault(ConfigurationParameters.dbGetgeneratedKeys, disabledValue).equalsIgnoreCase(disabledValue)){
+    // Get Identity columns if flag has been set
+    if(Properties().getBooleanPropertyOrDefault(ConfigurationParameters.dbGetgeneratedKeys, false)){
       if (Properties().isDebug()) System.out.println("Processing Generated Keys:");
       try{
         ResultSet gkrs = stmt.getGeneratedKeys();
-        convertRsIntoTable(resultTable, gkrs);
+        convertRsIntoTable(resultTable, gkrs, true);
       }catch (Exception e){
         if (Properties().isDebug()) System.out.println("Failed to get Generated Keys:" + e.getMessage());
       }
     }
     
-		if (resultTable.size() == 0){
-		  // No result sets add two empty lines for Header and Data
-		  resultTable.add(new ArrayList<String>());
-      resultTable.add(new ArrayList<String>());
-		}
-    if(!updateCountStr.isEmpty()){
-      resultTable.get(0).add(updateCountHeaderName);
-      resultTable.get(1).add(updateCountStr);
-    }		
 
     if(paramterList != null){
       //Skip the header start i at 1
       for( int i =1 ; i < paramterList.size(); i++){
         try{
           String [] paramValues = paramterList.get(i).get(1).split(":");           
-          int parameterIndex = paramValues.length < 1 ? 0 : Integer.parseUnsignedInt( paramValues[0]);
-          int sqlType = paramValues.length < 2 ? 0 : Integer.parseInt( paramValues[1]);
+          boolean outParameter = paramValues.length < 1 ? false : paramValues[0].toUpperCase().contains("O");
+          int parameterIndex = paramValues.length < 2 ? 0 : Integer.parseUnsignedInt( paramValues[1]);
 
-          if (sqlType == 0){ /* do nothing input parameter */}
-          else{
+          if (outParameter){ 
             String value = "";
             try{
-              value =  cstmt.getObject(parameterIndex).toString();
-            }catch (SQLException e){
-              value = e.getMessage();
-            }
-            try{
-              value =  Double.toString(cstmt.getDouble(parameterIndex));
+              Object o = cstmt.getObject(parameterIndex);
+              value = (o == null) ? null : o.toString();
             }catch (SQLException e){
               value = e.getMessage();
             }
@@ -177,24 +169,74 @@ public class SQLCommand extends SheetCommandBase {
             resultTable.get(1).add(value);
           }
         }catch( NumberFormatException e){
-          System.out.println("Failed processing Query Parameter:"+ paramterList.get(i).get(0) + "=" + paramterList.get(i).get(1) + " ->" + e.getMessage() ) ;
+          throw new RuntimeException("Failed processing Output Parameter:"+ paramterList.get(i).get(0) + "=" + paramterList.get(i).get(1), e);
         }
       }
     }   
 
 
     
-    // No Header columns - return nothing instead of two empty rows
+    // Empty Header columns - remove the top 2 empty rows
     if(resultTable.get(0).size()==0){
-      resultTable = new ArrayList<List<String>>();
+      resultTable.remove(0);
+      resultTable.remove(0);     
     }
     return resultTable;
 	}
 
+  private  List<List<String>> getResultSetsAndUpdateCounts(Statement stmt, boolean resultSetAvailable,  String updateCountHeaderName) throws SQLException
+  {
+ 
+     List<List<String>> results = new ArrayList<List<String>>();
+     results.add(new ArrayList<String>());// Empty Header
+     results.add(new ArrayList<String>());// Empty First Row
+
+     boolean supportsMultiResultSets = dbConnection.getMetaData().supportsMultipleResultSets();
+     if (Properties().isDebug()) System.out.println("supportsMultiResultSets:" + supportsMultiResultSets);
+
+     int updateColumnCounter = 1;
+     String updateColumnCounterStr="";
+     boolean moreResultsReceived = false;
+     int updateCount = 0; // set to something <> -1
+     
+     // To avoid an endless loop in case a JDBC driver is badly written we limit the number of loops
+     for(int l=0; l < getMaxLoops(); l++){
+        if (resultSetAvailable) {
+          ResultSet res = null;
+          res = stmt.getResultSet();
+          if (null != res){
+            moreResultsReceived = true;
+            convertRsIntoTable(results, res);
+          }
+        }else{
+          moreResultsReceived = false;
+          updateCount = stmt.getUpdateCount();
+          if (-1 != updateCount && !updateCountHeaderName.equalsIgnoreCase(disabledValue)){
+            results.get(0).add(updateCountHeaderName+ updateColumnCounterStr);
+            results.get(1).add(Integer.toString(updateCount));
+            updateColumnCounterStr = Integer.toString(++updateColumnCounter);
+          }
+        }
+
+        if (!supportsMultiResultSets) break;
+        if (!moreResultsReceived && -1 == updateCount) break;
+        // Set for the next loop
+        resultSetAvailable = stmt.getMoreResults();
+     }
+
+     return results;
+  }
+
+
 
   protected void convertRsIntoTable(List<List<String>> resultTable,  ResultSet rs) throws SQLException {
+    convertRsIntoTable(resultTable, rs, false);
+  }
+  
+  protected void convertRsIntoTable(List<List<String>> resultTable,  ResultSet rs, boolean extend) throws SQLException {
     ResultSetMetaData rsmd;
     int columnCount;
+    int rowCount =0;
     List<String> oneRow;
     rsmd = rs.getMetaData();
     columnCount = rsmd.getColumnCount();
@@ -205,37 +247,28 @@ public class SQLCommand extends SheetCommandBase {
     	oneRow.add(rsmd.getColumnName(i));
     	if (Properties().isDebug()) System.out.println("Header:"+ i + ":" + rsmd.getColumnName(i));
     }
-    resultTable.add(oneRow);
+    appendOrExtendRow(resultTable, oneRow, rowCount++, extend);
     while(rs.next()){
     	oneRow = new ArrayList<String>();
     	for (int i = 1; i <= columnCount; i++){
     		oneRow.add(rs.getString(i));
     		if (Properties().isDebug()) System.out.println("Row:"+ i + ":" + rs.getString(i));
     	}
-    	resultTable.add(oneRow);
+      appendOrExtendRow(resultTable, oneRow, rowCount++, extend);
     }
     rs.close();
   }
 
-  protected String getUpdateCount(Statement stmt) throws SQLException {
-    List<Integer> updateCountList= new ArrayList<Integer>();
-    int i=0;
-    int maxLoops = getMaxGetUpdateCountLoops();
-		while(i++ < maxLoops){
-		  int updateCount = stmt.getUpdateCount();
-	    if(updateCount != -1){
-	      updateCountList.add(updateCount);
-	    }else{
-	      break;
-	    }
-		}
-    String updateCountStr = updateCountList.toString().replace("[","").replace("]", "").trim(); //remove the list brackets
-    return updateCountStr;
+  protected List<List<String>> appendOrExtendRow(List<List<String>> resultTable, List<String> oneRow, int rowCount, boolean extend){
+    if(extend && resultTable.size() > rowCount){
+      resultTable.get(rowCount).addAll(oneRow);
+    }else{
+      resultTable.add(oneRow);
+    }
+    return resultTable;
   }
-
-	
-
-	@Override
+      
+  @Override
 	public void beginTable() {
 	  success= openConnection();
 	  if(!success){
@@ -291,13 +324,24 @@ public class SQLCommand extends SheetCommandBase {
     String dbUrl ="";
     String dbUser ="";
     String dbPassword = "";
+    String dbPropertiesName = "";
     Boolean success;
-    
+    java.util.Properties dbProperties = null; 
+
     jdbcDriver = Properties().getProperty(ConfigurationParameters.jdbcDriver);
+    dbPropertiesName =Properties().getPropertyOrDefault(ConfigurationParameters.dbProperties, "");
     dbUrl = Properties().getProperty(ConfigurationParameters.dbUrl);
     dbUser =Properties().getProperty(ConfigurationParameters.dbUser);
     dbPassword = Properties().getSecretProperty(ConfigurationParameters.dbPassword);
-    if (jdbcDriver == null || dbUrl == null || dbUser == null || dbPassword == null){
+    if(!dbPropertiesName.isEmpty()){
+      dbProperties =  Properties().getSubProperties(dbPropertiesName).toProperties();
+      if(jdbcDriver == null || dbProperties == null){
+        success = false;
+        rawResult = "Db Configuration is not complete. Required are  'jdbcDriver' (" + jdbcDriver + ") 'dbProperties' (" + dbPropertiesName + ")";
+        return success;
+        
+      }
+    }else if (jdbcDriver == null || dbUrl == null || dbUser == null || dbPassword == null){
       success = false;
       rawResult = "Db Configuration is not complete. Required are  'jdbcDriver' (" + jdbcDriver + ") 'dbURL' (" + dbUrl + ") 'dbUser' (" + dbUser + ") 'dbPassword'";
       return success;
@@ -311,15 +355,48 @@ public class SQLCommand extends SheetCommandBase {
       rawResult = "JDBC Driver (" + jdbcDriver + ") not found.";
       return success;
     }
+    if(dbProperties!=null){
+      try {
+        dbConnection= DriverManager.getConnection(dbUrl, dbProperties);
+      } catch (SQLException e) {
+        e.printStackTrace();
+        success = false;
+        rawResult = "Connect failed to db (" + dbUrl + ") with properties from (" + dbPropertiesName + ") :" + e.getMessage() ;
+        dbConnection =null;
+        return success;
+      }
+      
+    }else{
+      try {
+        dbConnection= DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+      } catch (SQLException e) {
+        e.printStackTrace();
+        success = false;
+        rawResult = "Connect failed to db (" + dbUrl + ") as (" + dbUser + ") :" + e.getMessage() ;
+        dbConnection =null;
+        return success;
+      }
+    }
+    Boolean autoCommit = Properties().getBooleanPropertyOrDefault(ConfigurationParameters.dbAutoCommit, true);
+    if (Properties().isDebug()){
+      Boolean ac2 = null;
+      try {
+        ac2 = dbConnection.getAutoCommit();
+      } catch (SQLException e1) {
+        // TODO Auto-generated catch block
+        e1.printStackTrace();
+      }
+      System.out.println("Open Connection - autocommit:"+ autoCommit + ":" + ac2 + ":" + command);
+    }
     try {
-      dbConnection= DriverManager.getConnection(dbUrl, dbUser, dbPassword);
-    } catch (SQLException e) {
-      e.printStackTrace();
+      dbConnection.setAutoCommit(autoCommit);
+    } catch (SQLException e1) {
       success = false;
-      rawResult = "Connect failed to db (" + dbUrl + ") as (" + dbUser + ") :" + e.getMessage() ;
-      dbConnection =null;
+      rawResult = "Setting Auto Commit to '"+ autoCommit +"' failed:" + e1.getMessage();
+      resultSheet = null;
       return success;
     }
+
     success = true;
     return success;
 	}
@@ -381,17 +458,17 @@ public class SQLCommand extends SheetCommandBase {
 
   }
 
-  public int getMaxGetUpdateCountLoops() {
-    if (maxGetUpdateloops == null){
-      String strValue = Properties().getPropertyOrDefault(ConfigurationParameters.jdbcMaxGetUpdateCountloops, "1");
+  private int getMaxLoops() {
+    if (cacheMaxLoops == null){
+      String strValue = Properties().getPropertyOrDefault(ConfigurationParameters.jdbcMaxloops, "100");
       try{
-        maxGetUpdateloops=Integer.parseInt(strValue);
+        cacheMaxLoops=Integer.parseInt(strValue);
       }catch (NumberFormatException e){
-        maxGetUpdateloops = 1;
-        throw new RuntimeException("The value set for " + ConfigurationParameters.jdbcMaxGetUpdateCountloops.toString() + " must be a number. Got '" + strValue + "'", e); 
+        cacheMaxLoops = 1;
+        throw new RuntimeException("The value set for " + ConfigurationParameters.jdbcMaxloops.toString() + " must be a number. Got '" + strValue + "'", e); 
       }
     }
-    return maxGetUpdateloops;
+    return cacheMaxLoops;
   }
 
 }

@@ -16,7 +16,7 @@ public class SheetEcho implements SheetCommandInterface {
 	
 	
 	public SheetEcho(List<List<String>> ParameterTable) throws FileNotFoundException, IOException {
-		loader.loadFromString("QUERY" );
+		loader.loadFromString(ConfigurationParameters.QUERY.toString());
 		resultSheet = ParameterTable;
 		myFixture = new SheetFixture("", this); 
 	}
@@ -93,5 +93,17 @@ public class SheetEcho implements SheetCommandInterface {
 	public PropertiesInterface Properties() {
 		return this.loader;
 	}
+
+  @Override
+  public void set(String columnName, String value) {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public String get(String columnName) {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
 }

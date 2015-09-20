@@ -171,5 +171,17 @@ public class SheetCommandBase implements SheetCommandInterface {
 		// Always do this
 		return doTable(ParameterTable);
 	}
+
+  @Override
+  public void set(String columnName, String value) {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public String get(String columnName) {
+    // TODO Auto-generated method stub
+    return null;
+  }
 	
 }

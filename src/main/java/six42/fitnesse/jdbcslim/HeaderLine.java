@@ -92,31 +92,50 @@ public class HeaderLine {
 	}
 
 	static public List<String> formatHeader(List<String> originalExpectedHeader, List<String> resultHeader) {
-		return formatHeader(originalExpectedHeader, resultHeader, "", "", "");
+		return formatHeader(originalExpectedHeader, resultHeader, "", "", "", null);
 	}
 
-	static public List<String> formatHeader(List<String> originalExpectedHeader, List<String> resultHeader, String rawCommand, String pre_fix, String post_fix) {
-		// TODO check also that the order of the Header columns is matching the output
+	/***
+	 *  Checks that each parameter given in the header exists in the command, flag them as fail if not
+   *  Marks all Header columns which are new in the actual and don't exist in the expected
+   *  Mark Input Columns green if they have been used
+   *  
+   * TODO check also that the order of the Header columns is matching the output
+   * 
+   * @param originalExpectedHeader
+	 * @param resultHeader
+	 * @param rawCommand
+	 * @param pre_fix
+	 * @param post_fix
+	 * @param properties
+	 * @return
+	 */
+	static public List<String> formatHeader(List<String> originalExpectedHeader, List<String> resultHeader, String rawCommand, String pre_fix, String post_fix, PropertiesInterface properties) {
 
-		// Checks that each parameter given in the header exists in the command
-		// Marks all Header columns which are new in the actual and don't exist in the expected
-		
+	  
 		List<String> result = new ArrayList<String>();
+		boolean flagUnused = true;
+		boolean flagExtra = true;
 		
+		if(properties != null){
+		  flagUnused = properties.getBooleanPropertyOrDefault(ConfigurationParameters.outputFlagUnusedInputColumns, flagUnused);
+		  flagExtra = properties.getBooleanPropertyOrDefault(ConfigurationParameters.outputFlagExtraOutputColumns, flagExtra);
+		}
 		for (int p=0; p < resultHeader.size(); p++){
 			String Cell;
 			if (originalExpectedHeader.size() <= p){
-				// New Header Columns added during the execution mark them as red
-				Cell = "fail:" + resultHeader.get(p);
+        // New Header Columns added during the execution mark them as red
+			  Cell = flagExtra ? "fail:" :  "report:";
+				Cell = Cell + resultHeader.get(p);
 			}
 			else if (isOutputColumn(resultHeader.get(p)) || isCommentColumn(resultHeader.get(p))|| rawCommand.isEmpty()){
 				Cell = "report:" + resultHeader.get(p);
 				
 			}
-			else if(rawCommand.contains(pre_fix + resultHeader.get(p) + post_fix)){
-				Cell = "pass:" + resultHeader.get(p);
-			}else{
+			else if(flagUnused && !rawCommand.contains(pre_fix + resultHeader.get(p) + post_fix)){
 				Cell = "fail:" + resultHeader.get(p);
+			}else{
+				Cell = "pass:" + resultHeader.get(p);
 			}
 			result.add( Cell);
 		}

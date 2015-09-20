@@ -13,10 +13,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Properties;
 
 public class PropertiesLoader implements PropertiesInterface{
 
-    private CryptoService crypto;
+    private CryptoService crypto = null;
     private DefineProperties theDefinitions = new DefineProperties(null);
 	private final static String encryptedFormPrefix = "ENC("; 
 	private final static String commentTag = "#"; 
@@ -42,7 +43,7 @@ public class PropertiesLoader implements PropertiesInterface{
     }
 
     public PropertiesLoader() {
-        this(CryptoFactories.getCryptoService());
+        this(null);
     }
 
     public Map<String, String> loadFromTupleList(List<String[]> tuples) throws FileNotFoundException, IOException {
@@ -331,6 +332,20 @@ public class PropertiesLoader implements PropertiesInterface{
 		return resultSheet;
 	}
 
+	 public Properties toProperties() {
+	   Properties resultSheet = new Properties();
+	  
+	    for (Map.Entry<String, String> entry: myProperties.entrySet()) {
+	          String key = entry.getKey();
+	          String val = entry.getValue();
+	          if (key.startsWith(secretTag)){
+	            key = key.substring(secretTag.length());
+	          }
+	          resultSheet.setProperty(key, val);
+	      }   
+	    return resultSheet;
+	  }
+
 	
 	/**
 	 * Checks for encrypted properties and returns
@@ -375,8 +390,28 @@ public class PropertiesLoader implements PropertiesInterface{
 	}
 
 	private void setDebugFromProperties(){
-		debugFlag = (getProperty("debug") != null);
+		debugFlag = getBooleanPropertyOrDefault(ConfigurationParameters.DEBUG, false);
 	}
 
+	public PropertiesLoader getSubProperties(String subPropertyName){
+    PropertiesLoader subParameters = null;
+    subParameters = new PropertiesLoader();
+      try {
+        subParameters.loadFromDefintionOrFile(subPropertyName );
+      } catch (FileNotFoundException e) {
+        throw new RuntimeException("The sub parameters (" + subPropertyName + ") could not be loaded: " + e.getMessage() );
+      } catch (IOException e) {
+        throw new RuntimeException("The sub parameters (" + subPropertyName + ") could not be loaded: " + e.getMessage() );
+      }
+
+      return subParameters;
+	}
+
+  @Override
+  public boolean getBooleanPropertyOrDefault(ConfigurationParameters propertyName, boolean defaultValue) {
+    String strValue = getProperty(propertyName.toString());
+    if (strValue == null) return defaultValue;
+    return !"false".equalsIgnoreCase(strValue);
+  }
 }
 

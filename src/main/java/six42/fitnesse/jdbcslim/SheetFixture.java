@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+
 import fitnesse.testsystems.ExecutionResult;
 import fitnesse.testsystems.slim.results.SlimTestResult;
 
@@ -15,7 +17,7 @@ public class SheetFixture {
 	private String _rawCommand = "";
 	private String _pre_fix = "%";
 	private String _post_fix = "%";
-	private String _nullStr = "#null#";
+	private final String _nullStr;
 	private SheetCommandInterface commandExecuter;
 	
 	
@@ -23,6 +25,7 @@ public class SheetFixture {
 
 		this._rawCommand = rawCommand;
 		this.commandExecuter = commandExecuter;
+		_nullStr = commandExecuter.Properties().getPropertyOrDefault(ConfigurationParameters.outputNullString, "#null#");
 	}
 
 
@@ -127,7 +130,13 @@ public class SheetFixture {
 				if (p >= Line.size()) Line.add(""); 
 				String rawColumnName = Header.get(p);
 				if (HeaderLine.isInputColumn(rawColumnName)){
-				  LineCommand = LineCommand.replaceAll("(?i)"+_pre_fix + HeaderLine.plainColumnName(rawColumnName)+ _post_fix, Line.get(p));
+          String value = Line.get(p);
+				  try{
+				    LineCommand = LineCommand.replaceAll("(?i)"+_pre_fix + HeaderLine.plainColumnName(rawColumnName)+ _post_fix, Matcher.quoteReplacement(value));
+				  }catch(IllegalArgumentException e){
+				    throw new RuntimeException("Replacement failed. The given value '" + value + "' can't be used", e); 
+				  }
+				  commandExecuter.set(HeaderLine.plainColumnName(rawColumnName), value);
 				}
 			}
       LineCommand = replaceAllDefaults(LineCommand, defaults, _pre_fix, _post_fix);
@@ -157,7 +166,7 @@ public class SheetFixture {
 			
 		}
 		// Color the Header Column	and update the total result set
-		result.add(0, HeaderLine.formatHeader(Header, resultHeader, _rawCommand, _pre_fix, _post_fix)); 
+		result.add(0, HeaderLine.formatHeader(Header, resultHeader, _rawCommand, _pre_fix, _post_fix, commandExecuter.Properties())); 
 		
 		return result;
 	}

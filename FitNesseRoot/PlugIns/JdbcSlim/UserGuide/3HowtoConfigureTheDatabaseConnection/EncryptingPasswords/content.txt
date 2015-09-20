@@ -1,5 +1,12 @@
 #Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
 #
+
+!3  WARNING: Any smart user of FitNesse can decryt the encrypted passwords!
+The current implementation avoids that passwords are stored in clear text in files.
+If you need more security implement a differnt store for your passwords.
+
+!4 CREDIT: The Encryption implementation is taken from the [[dbfit][http://github.com/dbfit/dbfit]] library.
+  
 To encrypt a password run:
 
 !note java -cp "commons-codec-1.9.jar;dbfit-core-3.2.0.jar" dbfit.util.crypto.CryptoApp **SECRET** -keyStoreLocation ${TestDbPath}
@@ -17,7 +24,6 @@ it is possible to use multiple key files in different locations.
 !|Define Properties|SecretDefinition             |
 |key               |value                        |
 |user              |James                        |
-|p2                |ENC(Qju8bnKzRCGmlE4jPh3PcA==)|
 |.keyStoreLocation |${TestDbPath}                |
 |password          |ENC(dP8utYfMtmrWZCylvGsOGw==)|
 |cmd               |Save the world!              |
@@ -28,7 +34,6 @@ and the password is not shown in clear text
 !| Table: SheetCommandBase|SecretDefinition||SORT|
 |Key?<1                   |Value?                |
 |cmd                      |Save the world!       |
-|p2                       |****                  |
 |password                 |****                  |
 |sort                     |                      |
 |user                     |James                 |
@@ -40,4 +45,3 @@ and the password is not shown in clear text
 
 Use the "getSecretProperty" function to access encrypted data in your fixture
 
-!4 CREDIT: The Encryption implementation is taken from the [[dbfit][http://github.com/dbfit/dbfit]] library.

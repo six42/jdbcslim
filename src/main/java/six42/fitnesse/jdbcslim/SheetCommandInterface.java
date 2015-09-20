@@ -26,5 +26,8 @@ public interface SheetCommandInterface  {
  	  public List<List<String>> resultSheet();
 
  	  public PropertiesInterface Properties();
+    public void set(String columnName, String value);
+    public String get(String columnName);
+    
 
 }

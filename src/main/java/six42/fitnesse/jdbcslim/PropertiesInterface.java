@@ -10,6 +10,8 @@ public interface PropertiesInterface {
 	public String getPropertyOrDefault(String propertyName, String defaultValue);
 
   public String getPropertyOrDefault(ConfigurationParameters propertyName, String defaultValue);
+  
+  public PropertiesLoader getSubProperties(String subPropertyName);
 
   public boolean isDebug();
 
@@ -23,4 +25,7 @@ public interface PropertiesInterface {
 	public String getSecretProperty(String propertyName);
 
   public String getSecretProperty(ConfigurationParameters dbpassword);
+
+  public boolean getBooleanPropertyOrDefault(
+      ConfigurationParameters outputflagunusedinputcolumns, boolean flagUnused);
 }

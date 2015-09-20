@@ -22,7 +22,7 @@ For H2 it is better to use select and not call.
 
 !|Define Properties|outParameters|
 |key               |value        |
-|Result            |1:8:0        |
+|Result            |O:1:8:0      |
 
 
 !|  SQLCommand|StoredProcedures|?= call SQRT(%No%)|dbQueryParameters=outParameters|
