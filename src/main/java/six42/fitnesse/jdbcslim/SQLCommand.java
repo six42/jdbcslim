@@ -256,7 +256,7 @@ public class SQLCommand extends SheetCommandBase {
     	}
       appendOrExtendRow(resultTable, oneRow, rowCount++, extend);
     }
-    rs.close();
+    //rs.close();
   }
 
   protected List<List<String>> appendOrExtendRow(List<List<String>> resultTable, List<String> oneRow, int rowCount, boolean extend){
