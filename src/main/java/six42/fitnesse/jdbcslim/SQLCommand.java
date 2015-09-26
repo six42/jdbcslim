@@ -86,8 +86,10 @@ public class SQLCommand extends SheetCommandBase {
 
 		
     String updateCountHeaderName = Properties().getPropertyOrDefault(ConfigurationParameters.dbUpdateCount, defaultUpdateCountHeaderName);
+    String nullInputValueStr = Properties().getPropertyOrDefault(ConfigurationParameters.inputNullString, Properties().getPropertyOrDefault(ConfigurationParameters.outputNullString, "#null#"));
 
-    
+    long startTime = System.currentTimeMillis();
+
     String parameterName = Properties().getPropertyOrDefault(ConfigurationParameters.dbQueryParameters, "");
     if (!parameterName.isEmpty()){
         PropertiesLoader queryParameters = Properties().getSubProperties(parameterName);
@@ -100,15 +102,21 @@ public class SQLCommand extends SheetCommandBase {
             String [] paramValues = paramterList.get(i).get(1).split(":");
             boolean inParameter = paramValues.length < 1 ? false : paramValues[0].toUpperCase().contains("I");
             boolean outParameter = paramValues.length < 1 ? false : paramValues[0].toUpperCase().contains("O");
-            int parameterIndex = paramValues.length < 2 ? 0 : Integer.parseUnsignedInt( paramValues[1]);
+            int parameterIndex = paramValues.length < 2 ? 0 : Integer.parseInt( paramValues[1]);
             int sqlType = paramValues.length < 3 ? 0 : Integer.parseInt( paramValues[2]);
-            int scale = paramValues.length < 4 ? -1 : Integer.parseUnsignedInt( paramValues[3]);
+            int scale = paramValues.length < 4 ? -1 : Integer.parseInt( paramValues[3]);
 
             if (inParameter && rowValues.containsKey(key)){ 
-              if(scale == -1)cstmt.setObject(parameterIndex, rowValues.get(key), sqlType); 
-              else cstmt.setObject(parameterIndex, rowValues.get(key), sqlType, scale);
-              cstmt.setObject(parameterIndex, rowValues.get(key));
+              Object obj = rowValues.get(key);
+              String value = null;
+              if(obj != null){
+                value = obj.toString();
+                if (nullInputValueStr.equalsIgnoreCase(value)) value = null;
               }
+              
+              if(scale == -1)cstmt.setObject(parameterIndex, value, sqlType); 
+              else cstmt.setObject(parameterIndex, value, sqlType, scale);
+            }
             if(outParameter){
               if(scale == -1)  cstmt.registerOutParameter(parameterIndex, sqlType);
               else         cstmt.registerOutParameter(parameterIndex, sqlType, scale);
@@ -119,11 +127,12 @@ public class SQLCommand extends SheetCommandBase {
             throw new RuntimeException("Failed setting Query Parameter:"+ paramterList.get(i).get(0) + "=" + paramterList.get(i).get(1), e);
           }
 
-        }   
-        long startTime = System.currentTimeMillis();
+        }
+        
+        // Restart the time to just measure the execution time
+        startTime = System.currentTimeMillis();
         resultsAvailable = cstmt.execute();
         stmt = cstmt;
-        long endTime = System.currentTimeMillis();
 
     }else{
       // Statement without DB Parameters
@@ -131,18 +140,41 @@ public class SQLCommand extends SheetCommandBase {
       resultsAvailable = stmt.execute(sqlCommand);
 
     }
-    
-    
-		
-    resultTable =getResultSetsAndUpdateCounts(stmt, resultsAvailable,  updateCountHeaderName);
-		
 
+    float perfExecutionTimeSeconds = new Float(System.currentTimeMillis() - startTime)/1000;
+
+    
+		
+    startTime = System.currentTimeMillis();
+    resultTable =getResultSetsAndUpdateCounts(stmt, resultsAvailable,  updateCountHeaderName,
+        Properties().getBooleanPropertyOrDefault(ConfigurationParameters.outputMultipleRecordsetsAsExtraColumns, true));
+
+    float perfRetrieveTimeSeconds = new Float(System.currentTimeMillis() - startTime)/1000;
+
+    String perfHeader;
+    perfHeader = Properties().getPropertyOrDefault(ConfigurationParameters.dbPerf, disabledValue);
+    if(!disabledValue.equalsIgnoreCase(perfHeader)){
+      resultTable.get(0).add(perfHeader);
+      resultTable.get(1).add(String.valueOf(perfRetrieveTimeSeconds+perfExecutionTimeSeconds));
+    }
+    perfHeader = Properties().getPropertyOrDefault(ConfigurationParameters.dbPerfExecution, disabledValue);
+    if(!disabledValue.equalsIgnoreCase(perfHeader)){
+      resultTable.get(0).add(perfHeader);
+      resultTable.get(1).add(String.valueOf(perfExecutionTimeSeconds));
+    }
+    perfHeader = Properties().getPropertyOrDefault(ConfigurationParameters.dbPerfRetrieval, disabledValue);
+    if(!disabledValue.equalsIgnoreCase(perfHeader)){
+      resultTable.get(0).add(perfHeader);
+      resultTable.get(1).add(String.valueOf(perfRetrieveTimeSeconds));
+    }
+    
+    
     // Get Identity columns if flag has been set
     if(Properties().getBooleanPropertyOrDefault(ConfigurationParameters.dbGetgeneratedKeys, false)){
       if (Properties().isDebug()) System.out.println("Processing Generated Keys:");
       try{
         ResultSet gkrs = stmt.getGeneratedKeys();
-        convertRsIntoTable(resultTable, gkrs, true);
+        convertRsIntoTable(resultTable, gkrs, true, disabledValue);
       }catch (Exception e){
         if (Properties().isDebug()) System.out.println("Failed to get Generated Keys:" + e.getMessage());
       }
@@ -184,7 +216,7 @@ public class SQLCommand extends SheetCommandBase {
     return resultTable;
 	}
 
-  private  List<List<String>> getResultSetsAndUpdateCounts(Statement stmt, boolean resultSetAvailable,  String updateCountHeaderName) throws SQLException
+  private  List<List<String>> getResultSetsAndUpdateCounts(Statement stmt, boolean resultSetAvailable,  String updateCountHeaderName, boolean extend) throws SQLException
   {
  
      List<List<String>> results = new ArrayList<List<String>>();
@@ -192,7 +224,9 @@ public class SQLCommand extends SheetCommandBase {
      results.add(new ArrayList<String>());// Empty First Row
 
      boolean supportsMultiResultSets = dbConnection.getMetaData().supportsMultipleResultSets();
-     if (Properties().isDebug()) System.out.println("supportsMultiResultSets:" + supportsMultiResultSets);
+     if (Properties().isDebug()) System.out.println("supportsMultiResultSets:" + supportsMultiResultSets + "; Additional Sets will be added as Columns:" + extend);
+
+     String summaryHeader = Properties().getPropertyOrDefault(ConfigurationParameters.dbOnlyRowCount, disabledValue);
 
      int updateColumnCounter = 1;
      String updateColumnCounterStr="";
@@ -200,13 +234,14 @@ public class SQLCommand extends SheetCommandBase {
      int updateCount = 0; // set to something <> -1
      
      // To avoid an endless loop in case a JDBC driver is badly written we limit the number of loops
-     for(int l=0; l < getMaxLoops(); l++){
+     int l;
+     for(l=0; l < getMaxLoops(); l++){
         if (resultSetAvailable) {
           ResultSet res = null;
           res = stmt.getResultSet();
           if (null != res){
             moreResultsReceived = true;
-            convertRsIntoTable(results, res);
+            convertRsIntoTable(results, res, extend, summaryHeader);
           }
         }else{
           moreResultsReceived = false;
@@ -220,20 +255,20 @@ public class SQLCommand extends SheetCommandBase {
 
         if (!supportsMultiResultSets) break;
         if (!moreResultsReceived && -1 == updateCount) break;
-        // Set for the next loop
+        // Get for the next loop
         resultSetAvailable = stmt.getMoreResults();
      }
-
+     if(l>= getMaxLoops()){
+       //The max loop limit was reached, this should never happen so we raise an exception
+       throw new RuntimeException("The command returned more than '" + l +"' recordsets or update count results and execution was aborted by jdbcSlim. " + 
+           "Set the parameter 'jdbcMaxloops' to a higher value to be able to finish your command.");
+     }
+     
      return results;
   }
 
-
-
-  protected void convertRsIntoTable(List<List<String>> resultTable,  ResultSet rs) throws SQLException {
-    convertRsIntoTable(resultTable, rs, false);
-  }
   
-  protected void convertRsIntoTable(List<List<String>> resultTable,  ResultSet rs, boolean extend) throws SQLException {
+  protected void convertRsIntoTable(List<List<String>> resultTable,  ResultSet rs, boolean extend, String summaryHeader) throws SQLException {
     ResultSetMetaData rsmd;
     int columnCount;
     int rowCount =0;
@@ -241,25 +276,41 @@ public class SQLCommand extends SheetCommandBase {
     rsmd = rs.getMetaData();
     columnCount = rsmd.getColumnCount();
     if (Properties().isDebug()) System.out.println("HeaderCount:"+ columnCount) ;
+
+    boolean summaryOnly = !disabledValue.equalsIgnoreCase(summaryHeader);
+
     
     oneRow = new ArrayList<String>();
     for (int i = 1; i <= columnCount; i++){
-    	oneRow.add(rsmd.getColumnName(i));
-    	if (Properties().isDebug()) System.out.println("Header:"+ i + ":" + rsmd.getColumnName(i));
+      String columnHeader = rsmd.getColumnLabel(i);
+      if (columnHeader == null || Properties().getBooleanPropertyOrDefault(ConfigurationParameters.dbUseColumnName, false)){
+        columnHeader = rsmd.getColumnName(i);
+      }
+    	oneRow.add(columnHeader);
+    	if (Properties().isDebug()) System.out.println("Header:"+ i + ":" + columnHeader);
     }
-    appendOrExtendRow(resultTable, oneRow, rowCount++, extend);
+    appendOrExtendRow(resultTable, oneRow, rowCount++, extend, summaryOnly);
+    
     while(rs.next()){
     	oneRow = new ArrayList<String>();
     	for (int i = 1; i <= columnCount; i++){
     		oneRow.add(rs.getString(i));
     		if (Properties().isDebug()) System.out.println("Row:"+ i + ":" + rs.getString(i));
     	}
-      appendOrExtendRow(resultTable, oneRow, rowCount++, extend);
+      appendOrExtendRow(resultTable, oneRow, rowCount++, extend, summaryOnly);
     }
     //rs.close();
+    
+    if(summaryOnly){
+        resultTable.get(0).add(summaryHeader);
+        resultTable.get(1).add(String.valueOf(rowCount-1));
+    }
   }
 
-  protected List<List<String>> appendOrExtendRow(List<List<String>> resultTable, List<String> oneRow, int rowCount, boolean extend){
+  protected List<List<String>> appendOrExtendRow(List<List<String>> resultTable, List<String> oneRow, int rowCount, boolean extend, boolean summaryOnly){
+    // If a summary is requested nothing must be done
+    if (summaryOnly) return resultTable;
+    
     if(extend && resultTable.size() > rowCount){
       resultTable.get(rowCount).addAll(oneRow);
     }else{
