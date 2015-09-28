@@ -72,16 +72,10 @@
 	<target name="acceptance_tests" depends="jar">
 		<java jar="${dist.dir}/fitnesse-standalone.jar" failonerror="true" fork="true">
 			<arg value="-c" />
-			<arg value="PlugIns.JdbcSlim.UserGuide?suite&amp;format=txt" />
+			<arg value="PlugIns.JdbcSlim.UserGuide?suite&amp;format=text" />
 		</java>
 	</target>
 	<target name="acceptance_tests_xml" depends="jar">
-		<java jar="${dist.dir}/fitnesse-standalone.jar" failonerror="true" fork="true">
-			<arg value="-c" />
-			<arg value="PlugIns.JdbcSlim.UserGuide?suite&amp;format=xml" />
-		</java>
-	</target>
-	<target name="acceptance_tests_xml2" depends="jar">
 		<java jar="${dist.dir}/fitnesse-standalone.jar" failonerror="true" fork="true" output="fitnesse-results.xml">
 			<arg value="-c" />
 			<arg value="PlugIns.JdbcSlim.UserGuide?suite&amp;format=xml" />

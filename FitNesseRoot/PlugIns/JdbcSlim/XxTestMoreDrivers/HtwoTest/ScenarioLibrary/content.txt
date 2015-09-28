@@ -5,8 +5,8 @@
 !include -c .FitNesse.SuiteAcceptanceTests.ScenarioLibrary
 
 
-!define Header { !define TestLibInstallPath (${LibInstallPath}) 
-!define JdbcSlimLib (${JdbcSlimLib})!-
+!define Header { !define TestLibInstallPath (${LibInstallPath}!-) 
+!define JdbcSlimLib -!(${JdbcSlimLib})!-
 #Standard Test Page header
 !define TEST_SYSTEM {slim}
 
