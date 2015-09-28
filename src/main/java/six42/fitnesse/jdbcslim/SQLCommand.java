@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.sql.*;
 
 public class SQLCommand extends SheetCommandBase {
@@ -77,78 +79,27 @@ public class SQLCommand extends SheetCommandBase {
 	}
 
 	private List<List<String>> dbExecute(String sqlCommand) throws SQLException{
-		Statement stmt;
 		CallableStatement cstmt = null;
 		boolean resultsAvailable;
 		
-    List<List<String>> paramterList = null;
 		List<List<String>> resultTable = new ArrayList<List<String>>();
 
 		
     String updateCountHeaderName = Properties().getPropertyOrDefault(ConfigurationParameters.dbUpdateCount, defaultUpdateCountHeaderName);
     String nullInputValueStr = Properties().getPropertyOrDefault(ConfigurationParameters.inputNullString, Properties().getPropertyOrDefault(ConfigurationParameters.outputNullString, "#null#"));
 
-    long startTime = System.currentTimeMillis();
 
-    String parameterName = Properties().getPropertyOrDefault(ConfigurationParameters.dbQueryParameters, "");
-    if (!parameterName.isEmpty()){
-        PropertiesLoader queryParameters = Properties().getSubProperties(parameterName);
-        cstmt = dbConnection.prepareCall(sqlCommand);
-        paramterList = queryParameters.toTable();
-        //Skip the header start i at 1
-        for( int i =1 ; i < paramterList.size(); i++){
-          try{
-            String key = paramterList.get(i).get(0);
-            String [] paramValues = paramterList.get(i).get(1).split(":");
-            boolean inParameter = paramValues.length < 1 ? false : paramValues[0].toUpperCase().contains("I");
-            boolean outParameter = paramValues.length < 1 ? false : paramValues[0].toUpperCase().contains("O");
-            int parameterIndex = paramValues.length < 2 ? 0 : Integer.parseInt( paramValues[1]);
-            int sqlType = paramValues.length < 3 ? 0 : Integer.parseInt( paramValues[2]);
-            int scale = paramValues.length < 4 ? -1 : Integer.parseInt( paramValues[3]);
+    cstmt = dbConnection.prepareCall(sqlCommand);
 
-            if (inParameter && rowValues.containsKey(key)){ 
-              Object obj = rowValues.get(key);
-              String value = null;
-              if(obj != null){
-                value = obj.toString();
-                if (nullInputValueStr.equalsIgnoreCase(value)) value = null;
-              }
-              
-              if(scale == -1)cstmt.setObject(parameterIndex, value, sqlType); 
-              else cstmt.setObject(parameterIndex, value, sqlType, scale);
-            }
-            if(outParameter){
-              if(scale == -1)  cstmt.registerOutParameter(parameterIndex, sqlType);
-              else         cstmt.registerOutParameter(parameterIndex, sqlType, scale);
-            }
-          }catch( NumberFormatException e){
-            throw new RuntimeException("Failed processing Query Parameter:"+ paramterList.get(i).get(0) + "=" + paramterList.get(i).get(1), e);
-          }catch( SQLException e){
-            throw new RuntimeException("Failed setting Query Parameter:"+ paramterList.get(i).get(0) + "=" + paramterList.get(i).get(1), e);
-          }
-
-        }
-        
-        // Restart the time to just measure the execution time
-        startTime = System.currentTimeMillis();
-        resultsAvailable = cstmt.execute();
-        stmt = cstmt;
-
-    }else{
-      // Statement without DB Parameters
-      stmt = dbConnection.createStatement();
-      resultsAvailable = stmt.execute(sqlCommand);
-
-    }
-
-    float perfExecutionTimeSeconds = new Float(System.currentTimeMillis() - startTime)/1000;
-
+    SortedMap<Integer, String> outputParamterMap = setInputParameters(cstmt, nullInputValueStr);
     
+    long startTime = System.currentTimeMillis();
+    resultsAvailable = cstmt.execute();
+    float perfExecutionTimeSeconds = new Float(System.currentTimeMillis() - startTime)/1000;
 		
     startTime = System.currentTimeMillis();
-    resultTable =getResultSetsAndUpdateCounts(stmt, resultsAvailable,  updateCountHeaderName,
+    resultTable =getResultSetsAndUpdateCounts(cstmt, resultsAvailable,  updateCountHeaderName,
         Properties().getBooleanPropertyOrDefault(ConfigurationParameters.outputMultipleRecordsetsAsExtraColumns, true));
-
     float perfRetrieveTimeSeconds = new Float(System.currentTimeMillis() - startTime)/1000;
 
     String perfHeader;
@@ -173,48 +124,93 @@ public class SQLCommand extends SheetCommandBase {
     if(Properties().getBooleanPropertyOrDefault(ConfigurationParameters.dbGetgeneratedKeys, false)){
       if (Properties().isDebug()) System.out.println("Processing Generated Keys:");
       try{
-        ResultSet gkrs = stmt.getGeneratedKeys();
+        ResultSet gkrs = cstmt.getGeneratedKeys();
         convertRsIntoTable(resultTable, gkrs, true, disabledValue);
       }catch (Exception e){
         if (Properties().isDebug()) System.out.println("Failed to get Generated Keys:" + e.getMessage());
       }
     }
     
-
-    if(paramterList != null){
-      //Skip the header start i at 1
-      for( int i =1 ; i < paramterList.size(); i++){
-        try{
-          String [] paramValues = paramterList.get(i).get(1).split(":");           
-          boolean outParameter = paramValues.length < 1 ? false : paramValues[0].toUpperCase().contains("O");
-          int parameterIndex = paramValues.length < 2 ? 0 : Integer.parseUnsignedInt( paramValues[1]);
-
-          if (outParameter){ 
-            String value = "";
-            try{
-              Object o = cstmt.getObject(parameterIndex);
-              value = (o == null) ? null : o.toString();
-            }catch (SQLException e){
-              value = e.getMessage();
-            }
-            resultTable.get(0).add(paramterList.get(i).get(0));
-            resultTable.get(1).add(value);
-          }
-        }catch( NumberFormatException e){
-          throw new RuntimeException("Failed processing Output Parameter:"+ paramterList.get(i).get(0) + "=" + paramterList.get(i).get(1), e);
-        }
-      }
-    }   
+    getOutputParameterValues(cstmt, resultTable, outputParamterMap);   
 
 
     
-    // Empty Header columns - remove the top 2 empty rows
-    if(resultTable.get(0).size()==0){
+    // Only empty header columns? - then remove the (top 2) empty rows
+    if(resultTable.get(0).isEmpty()){
       resultTable.remove(0);
       resultTable.remove(0);     
     }
     return resultTable;
 	}
+
+  /**
+   * @param cstmt
+   * @param resultTable
+   * @param outputParamterMap 
+   *  - the map keys are the positions of the output parameters in the CallableStatement
+   *  - the map values are the names of the column headers
+   */
+  protected void getOutputParameterValues(CallableStatement cstmt,
+      List<List<String>> resultTable,
+      final SortedMap<Integer, String> outputParamterMap) {
+    for (Map.Entry<Integer, String> entry : outputParamterMap.entrySet()){
+      String value = "";
+      try{
+        Object o = cstmt.getObject(entry.getKey());
+        value = (o == null) ? null : o.toString();
+      }catch (SQLException e){
+        value = e.getMessage();
+      }
+      resultTable.get(0).add(entry.getValue());
+      resultTable.get(1).add(value);
+    }
+  }
+
+  protected SortedMap<Integer,String> setInputParameters(CallableStatement cstmt, final String nullInputValueStr) {
+    List<List<String>> inputParamterList = null;
+    SortedMap<Integer,String> outputParamterMap = new TreeMap<Integer,String>();
+
+    String parameterName = Properties().getPropertyOrDefault(ConfigurationParameters.dbQueryParameters, "");
+    if (!parameterName.isEmpty()){
+        PropertiesLoader queryParameters = Properties().getSubProperties(parameterName);
+        inputParamterList = queryParameters.toTable();
+        //Skip the header start i at 1
+        for( int i =1 ; i < inputParamterList.size(); i++){
+          try{
+            String columnName = inputParamterList.get(i).get(0);
+            String [] paramValues = inputParamterList.get(i).get(1).split(":");
+            boolean inParameter = paramValues.length < 1 ? false : paramValues[0].toUpperCase().contains("I");
+            boolean outParameter = paramValues.length < 1 ? false : paramValues[0].toUpperCase().contains("O");
+            int parameterIndex = paramValues.length < 2 ? 0 : Integer.parseInt( paramValues[1]);
+            int sqlType = paramValues.length < 3 ? 0 : Integer.parseInt( paramValues[2]);
+            int scale = paramValues.length < 4 ? -1 : Integer.parseInt( paramValues[3]);
+
+            if (inParameter && rowValues.containsKey(columnName)){ 
+              Object obj = rowValues.get(columnName);
+              String value = null;
+              if(obj != null){
+                value = obj.toString();
+                if (nullInputValueStr.equalsIgnoreCase(value)) value = null;
+              }
+              
+              if(scale == -1)cstmt.setObject(parameterIndex, value, sqlType); 
+              else cstmt.setObject(parameterIndex, value, sqlType, scale);
+            }
+            if(outParameter){
+              if(scale == -1)  cstmt.registerOutParameter(parameterIndex, sqlType);
+              else         cstmt.registerOutParameter(parameterIndex, sqlType, scale);
+              outputParamterMap.put(parameterIndex, columnName);
+            }
+          }catch( NumberFormatException e){
+            throw new RuntimeException("Failed processing Query Parameter:"+ inputParamterList.get(i).get(0) + "=" + inputParamterList.get(i).get(1), e);
+          }catch( SQLException e){
+            throw new RuntimeException("Failed setting Query Parameter:"+ inputParamterList.get(i).get(0) + "=" + inputParamterList.get(i).get(1), e);
+          }
+
+        }
+    }
+    return outputParamterMap;
+  }
 
   private  List<List<String>> getResultSetsAndUpdateCounts(Statement stmt, boolean resultSetAvailable,  String updateCountHeaderName, boolean extend) throws SQLException
   {
