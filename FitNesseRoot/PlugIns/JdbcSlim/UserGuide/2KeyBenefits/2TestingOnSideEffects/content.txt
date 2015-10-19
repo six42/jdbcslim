@@ -27,7 +27,9 @@ Additional we want to check that no other user got moved.
 
 !3 Run the test
 
-!include -c 1ASimpleExample
+!include -c .PlugIns.JdbcSlim.UserGuide.1ASimpleExample 
+#
+
 
 !3 Compare the data of the other people after the test.
 
