@@ -21,10 +21,12 @@ public enum ConfigurationParameters {
   outputMultipleRecordsetsAsExtraColumns,
   outputNullString,
   inputNullString,
+  inputDefaults,
   dbUseColumnName, 
   dbPerf, 
   dbPerfRetrieval, 
   dbPerfExecution, 
   dbOnlyRowCount,
-  DEBUG
+  DEBUG, 
+  RETRY 
 }

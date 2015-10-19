@@ -19,7 +19,7 @@ public class SheetFixture {
 	private String _post_fix = "%";
 	private final String _nullStr;
 	private SheetCommandInterface commandExecuter;
-	
+	private RetryManager retry = null;
 	
 	public SheetFixture(String rawCommand,  SheetCommandInterface commandExecuter){
 
@@ -31,11 +31,12 @@ public class SheetFixture {
 
 
 	public List doTable(List<List<String>> ParameterTable){
-		List<List<String>> result;
+		List<List<String>> result = null;
 		List<String> Header = null;
 		boolean hasParameters = false;
 		boolean hasHeader = (ParameterTable.size() >= 1);
-
+		
+		
 		if (hasHeader){
 			Header = ParameterTable.get(0);
 			hasParameters = HeaderLine.hasHeaderParameters(Header);
@@ -48,15 +49,18 @@ public class SheetFixture {
 		commandExecuter.beginTable();
 		
 		
-		if (!hasParameters){
-			// Select Table Command
-			result = processComandOnceAndCompareToExpected(ParameterTable, hasHeader);
-
-		}else{
-			
-			result = processCommandLineByLine(ParameterTable, Header);
-		}
-
+    for(retry = new RetryManager(commandExecuter.Properties().getPropertyOrDefault(ConfigurationParameters.RETRY, "")); retry.shouldTryAgain(); ){
+  		if (!hasParameters){
+  			// Select Table Command
+  			result = processComandOnceAndCompareToExpected(ParameterTable, hasHeader);
+  
+  		}else{
+  			
+  			result = processCommandLineByLine(ParameterTable, Header);
+  		}
+    }
+    if(commandExecuter.Properties().isDebug()) System.out.println(retry.toString());
+    
 		// Add one empty line at the end to program around a bug in the table fixture 
 		result.add(new ArrayList<String>());
 
@@ -104,18 +108,8 @@ public class SheetFixture {
 		resultHeader = new ArrayList<String>(Header);
 		
 		// Get InputDefaults if defined
-		PropertiesLoader defaults = null;
-		String defaultName = commandExecuter.Properties().getProperty("inputdefaults");
-		if (defaultName != null){
-		  defaults = new PropertiesLoader();
-	      try {
-          defaults.loadFromDefintionOrFile(defaultName );
-        } catch (FileNotFoundException e) {
-          throw new RuntimeException("The input defaults (" + defaultName + ") could not be loaded: " + e.getMessage() );
-        } catch (IOException e) {
-          throw new RuntimeException("The input defaults (" + defaultName + ") could not be loaded: " + e.getMessage() );
-        }
-		}
+		String defaultName = commandExecuter.Properties().getProperty(ConfigurationParameters.inputDefaults);
+    PropertiesLoader defaults = (defaultName == null) ? null: commandExecuter.Properties().getSubProperties(defaultName); 
 		
 		// Start at Line 1, after the Header
 		for (int l=1; l < ParameterTable.size(); l++){
@@ -152,14 +146,13 @@ public class SheetFixture {
 				}
 				if (LineResultSheet.size() !=2){
 					Line.add("fail:" + LineCommand);
-					Line.add("fail:Got zero or more than one result row; expected exactly one: "+ commandExecuter.rawResult());
+					Line.add("fail:Got " + LineResultSheet.size() + " result rows; expected exactly one: "+ commandExecuter.rawResult());
 				}else{
 					Line = compareLine(resultHeader, LineResultSheet.get(0),Line, LineResultSheet.get(1));
 				}
 			}else{
 				Line.add("fail:" + LineCommand);
 				Line.add("fail:"+ commandExecuter.rawResult());
-					
 			}
 			
 			result.add(Line);
@@ -222,6 +215,7 @@ public class SheetFixture {
 					if(actual == null) actual = _nullStr;
 					if (expectedLine.size() <= i){
 						// Additional Value
+					  retry.runFailed();
 						lineResult.add("fail:[+]" +actual);
 					}else if (expected.isEmpty()){
 						lineResult.add("ignore:" +actual);
@@ -236,6 +230,7 @@ public class SheetFixture {
 						if (  er == ExecutionResult.PASS){
 							lineResult.add("pass:" +str.getMessage());
 						}else{
+						  retry.runFailed();
 							if (actualLine.size() <= LineResultIndex){
 								// Missing Actual Column, mark cell as missing 
 								lineResult.add("fail:[-]" + expected );
@@ -248,6 +243,7 @@ public class SheetFixture {
 					if (expected.compareTo("") == 0 || !HeaderLine.isOutputColumn(expectedHeader.get(i))){
 						lineResult.add("report:" + expected);
 					}else{
+					  retry.runFailed();
 						lineResult.add("fail:" + expected);
 					}
 					
@@ -261,6 +257,7 @@ public class SheetFixture {
 					// Safety check on index, expected to never see the else part text 
 						String actual = actualLine.size() > i-maxActual ?  actualLine.get(i-maxActual) : "Actual Header without actual Data?";
 					lineResult.add("fail:Extra:" +actual);
+					retry.runFailed();
 					expectedHeader.add(actualHeader.get(i-maxActual));
 					
 				}else{
@@ -286,7 +283,6 @@ public class SheetFixture {
 			final List<String>  emptyRow =  new ArrayList<String>();
 
 			Boolean isSubQuery = commandExecuter.Properties().getPropertyOrDefault("subquery", "false").compareToIgnoreCase("false") !=0;
-
 			
 			int c;
 			List<String> expectedHeader;

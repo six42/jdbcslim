@@ -1,0 +1,57 @@
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+
+!3 Given 
+!| SQLCommand|TestDatabase|select ID, City from TestData where ID ='%ID%'|
+|ID         |City?                                                                    |
+|1           |Berlin                                                                     |
+
+
+!|Define Properties|Dummy|
+|key               |value|
+|CMD               |     |
+
+!|Script                                                                        |
+|# Your code here to create a Connection Object                                 |
+|start         |SQLCommand             |Dummy                                   |
+|$Cnn=         |testHomeMadeConnection;|jdbc:h2:mem:h2db;DB_CLOSE_DELAY=-1|na|na|
+|# Now add the connection symbol to be able to use it                           |
+|addConnection;|ConnectionName         |$Cnn                                    |
+
+!3 When An asynchronus sql update starts which will execute after 1 seconds
+
+!|Script | 
+|Start | DelayedExecutor| $Cnn|  update TestData set City ='Miami' where ID='1'|1000|
+
+!3 Then the city value doesn't updates immediately 
+!| SQLCommand|TestDatabase|select City from TestData where ID ='%ID%'|
+|ID         |City?                                                                    |
+|1           |Berlin                                                                     |
+
+!3 When we add a retry (50 times in 10 seconds) 
+!3 Then we catch the update once it happens  
+!| SQLCommand|TestDatabase|select City from TestData where ID ='%ID%'|RETRY=50:10000|
+|ID         |City?                                                                    |
+|1           |Miami                                                                     |
+
+# if no update happens then the retry stops with fail after the expected time
+#!| SQLCommand|TestDatabase|select City from TestData where ID ='%ID%'| RETRY=100:1000|
+#|ID         |City?                                                                    |
+#|1           |Berlin                                                                     |
+
+
+
+!4 Revert updates done
+!| SQLCommand|TestDatabase|update TestData set City ='%City%' where ID='%ID%'|
+|ID         |City                                                                    |Count?|
+|1           |Berlin                                                                     |1|
+
+!4 Close the connection and remove it from the list of available connections
+!|Define Properties|UseHomeMadeConnection|
+|key               |value                |
+|DBConnection      |ConnectionName       |
+|CMD               |                     |
+
+!|Script: SQLCommand|UseHomeMadeConnection|
+|closeConnection                          |
+|removeConnection   |ConnectionName       |

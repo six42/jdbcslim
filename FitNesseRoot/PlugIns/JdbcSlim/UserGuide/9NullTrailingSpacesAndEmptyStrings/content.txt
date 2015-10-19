@@ -1,0 +1,74 @@
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+
+To insert or update '''null''' values define input parameters and use "?" syntax.
+Specify null as '''#null#'''
+
+To insert leading and trailing Spaces use the '''!-!- Denver -!''''''-!''' syntax
+
+!|Define Properties|inParameters|
+|key               |value       |
+|Name              |I:1:12:0    |
+
+
+!|SQLCommand|TestDatabase|!-insert into TestData
+values (DEFAULT, ?, '%Phone%', '%City%', '%Profession%')-!|!-dbgetgeneratedkeys 
+dbQueryParameters=inParameters 
+outputFlagUnusedInputColumns=false-!|
+|SCOPE_IDENTITY()?|City  |Name|Phone|Profession|Count?|
+|$ID1=            |Berlin|#null#|12345|    |1     |
+|$ID2=            |!-     Denver-!|!-Bob     -! |6789 |    |1     |
+
+
+To test  '''null''' values in output specify null as '''#null#'''
+
+To test leading and trailing spaces use the '''!-!- text -!''''''-!''' syntax or regex '''=~/\A text \z/'''
+
+To test for an empty string use regex '''=~/\A\z/'''
+!note Define this pattern in a variable it will likely changes in the future to something more readable
+!define EmptyString {=~/\A\z/}
+
+!|SQLCommand|TestDatabase|select City, Name, Name!-||-! City as CityName, Profession from  TestData where ID ='%ID%'|
+|ID|City?  |Name?|CityName?| Profession?|
+|$ID1            |=~/\ABerlin\z/|#null#|#null#||
+|$ID2            |=~/\A     Denver\z/|!-Bob     -! | Bob          Denver | ${EmptyString}|
+
+
+if you must insert the string #null# in the database you can define a different null pattern with the property '''inputNullString'''
+
+!|Define Properties|inParameters|
+|key               |value       |
+|Name              |I:1:12:0    |
+|City              |I:2:12:0    |
+
+!|SQLCommand|TestDatabase|update TestData set Name = ?, City = ? where ID ='%ID%'| !-inputNullString=--null-- 
+dbQueryParameters=inParameters 
+outputFlagUnusedInputColumns=false-!|
+|ID|City|Name|Count?|
+|$ID1            |--null--|#null#|1|
+
+
+!|SQLCommand|TestDatabase|select City, Name, length(City) as CityLength, length(Name) as NameLength  from  TestData where ID ='%ID%'|
+|ID|City?|Name?|CityLength?|NameLength?|
+|$ID1            |#null#|#null#|#null#|6|
+
+You can also change the output format for null values with the property '''outputNullString'''
+
+!|SQLCommand|TestDatabase|select City, Name, length(City) as CityLength, length(Name) as NameLength  from  TestData where ID ='%ID%'| outputNullString=++null++ |
+|ID|City?|Name?|CityLength?|NameLength?|
+|$ID1            |++null++|#null#|++null++|6|
+
+
+
+!*< Cleanup
+
+!| SQLCommand|TestDatabase|delete TestData  where ID ='%ID%'|
+|ID          |Count?                                         |
+|$ID1        |1                                              |
+|$ID2        |1                                              |
+
+
+*!
+
+!contents -R2 -g -p -f -h
+
