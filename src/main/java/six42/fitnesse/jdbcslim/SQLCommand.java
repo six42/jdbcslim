@@ -100,7 +100,7 @@ public class SQLCommand extends SheetCommandBase {
     TimeMeasurement retrievelTime = (new TimeMeasurement()).start();
     resultTable =getResultSetsAndUpdateCounts(cstmt, resultsAvailable,  updateCountHeaderName,
         Properties().getBooleanPropertyOrDefault(ConfigurationParameters.outputMultipleRecordsetsAsExtraColumns, true));
-    retrievelTime.elapsedSeconds();
+    retrievelTime.stop();
 
     String perfHeader;
     perfHeader = Properties().getPropertyOrDefault(ConfigurationParameters.dbPerf, disabledValue);

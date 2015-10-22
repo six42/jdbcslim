@@ -57,7 +57,7 @@ values (DEFAULT, '%Name%', %Phone%, '%City%', '%Profession%')-!|dbgetgeneratedke
 |3                |Seoul     |Tom  |4567890|Milkman   |
 |4                |Berlin    |Till |332211 |Senator   |
 |5                |Paris     |Sarah|999999 |Hero      |
-|6                |London    |James|null   |Butler    |
+|6                |London    |James|#null#   |Butler    |
 |7                |Washington|Bert |432    |President |
 |8                |New York  |Kim  |1      |Banker    |
 
