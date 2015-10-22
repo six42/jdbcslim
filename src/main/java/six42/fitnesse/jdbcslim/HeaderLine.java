@@ -7,7 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class HeaderLine {
-	static private final Pattern reSort = Pattern.compile("(<|>)(\\d*)"); 
+	static private final Pattern reSort = Pattern.compile("(<|>)(\\d*)([sdf]?)"); 
 
 
 	static public boolean isOutputColumn(String columnHeader){
@@ -24,7 +24,7 @@ public class HeaderLine {
 	static public String plainColumnName(String columnHeader){
 		// Remove the question mark from parameter columns and
 		// the sort symbol 
-		return reSort.matcher(columnHeader.replace("?", "")).replaceFirst("");
+		return reSort.matcher(columnHeader.replace("?", "").replace("!", "")).replaceFirst("");
 	}
 
   public static boolean isHeaderNameEqual(String plainHeaderName1, String plainHeaderName2) {
@@ -50,9 +50,17 @@ public class HeaderLine {
 		}
 		return 0;
 	}
-	
-	static public List<Integer> generateSortKeyList(List<String> Header){
-		List<Integer> result = new ArrayList<Integer>();
+
+	 static public String sortType(String columnHeader){
+	    Matcher m = reSort.matcher(columnHeader);
+	    if(m.find()){
+	      return  m.group(3);
+	    }
+	    return "s";
+	  }
+
+	static public List<HeaderCell> generateSortKeyList(List<String> Header){
+		List<HeaderCell> result = new ArrayList<HeaderCell>();
 		int no;
 		
 		for (int p=0; p < Header.size(); p++){
@@ -60,25 +68,27 @@ public class HeaderLine {
 			if (no != 0){
 				// TODO use the value of no to define the sort order
 				// SortKeyList Index values start from 1 not 0 so add 1
-				result.add(no >0 ? p+1 : -(p+1));
+			  String sortType = sortType(Header.get(p));
+				result.add(new HeaderCell(sortType, p+1, no >0 ? 1 : -1));
 			}
 		}
 		return result;
 		
 	}
+
 	
-	static public List<Integer> generateActualSortKeyList(List<Integer> expectedSortKeyList, int[] headerMap, int sizeExpected){
-		List<Integer> result = new ArrayList<Integer>();
+	static public List<HeaderCell> generateActualSortKeyList(List<HeaderCell> expectedSortKeyList, int[] headerMap, int sizeExpected){
+		List<HeaderCell> result = new ArrayList<HeaderCell>();
 			for(int i=0; i< expectedSortKeyList.size(); i++){
-				Integer expectedIndex = expectedSortKeyList.get(i);
-				Integer actualIndex = headerMap[Math.abs(expectedIndex)-1];
+				HeaderCell expectedIndex = expectedSortKeyList.get(i);
+				Integer actualIndex = headerMap[expectedIndex.getSortIndex()-1];
 				if (actualIndex != -1){
-					result.add(expectedIndex > 0 ? actualIndex+1 : (actualIndex+1) * -1);
+					result.add(new HeaderCell(expectedIndex.getSortType(),actualIndex+1,  expectedIndex.getSortDirection()));
 				}else{
 					// The actual result has no matching column
 					// this makes it impossible to compare results
 					// throw an exception
-					throw new RuntimeException("The actual results have no column with the same name as expected column: " + (Math.abs(expectedIndex)-1));
+					throw new RuntimeException("The actual results have no column with the same name as expected column: " + (expectedIndex.getSortIndex()-1));
 				}
 			}
 		return result;

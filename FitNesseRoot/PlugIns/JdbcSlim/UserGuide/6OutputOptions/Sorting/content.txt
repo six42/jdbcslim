@@ -36,7 +36,7 @@ adding the QUERY tag allows to omit the question mark at each header column name
 |3           |Seoul       |Tom                   |4567890|Milkman   |
 |5           |Paris       |Sarah                 |999999 |Hero      |
 |8           |New York    |Kim                   |1      |Banker    |
-|6           |London      |James                 |5432   |Butler    |
+|6           |London      |James                 |#null#   |Butler    |
 |2           |Denver      |Ben                   |6789   |Artist    |
 |1           |Berlin      |Bill                  |12345  |Doctor    |
 |4           |Berlin      |Till                  |332211 |Senator   |

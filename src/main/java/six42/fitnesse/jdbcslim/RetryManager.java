@@ -1,5 +1,7 @@
 package six42.fitnesse.jdbcslim;
 
+import fitnesse.util.Clock;
+
 public class RetryManager {
 
   private boolean allFieldsPassedNoRetry = true;
@@ -34,14 +36,14 @@ public class RetryManager {
 
     this.intervallTimeMs = this.maxTotalTimeMs/ this.maxRetryCount;
     
-    this.startTimeMs = System.currentTimeMillis();
+    this.startTimeMs = Clock.currentTimeInMillis();
     this.loopStartTimeMs = startTimeMs;
     this.retryCount=0;
     this.allFieldsPassedNoRetry = true;
   }
 
   public boolean shouldTryAgain() {
-    long endTimeMs = System.currentTimeMillis();
+    long endTimeMs = Clock.currentTimeInMillis();
 
     // Always one run
     if (retryCount==0) return prepareNextRetry();
@@ -71,7 +73,7 @@ public class RetryManager {
   private boolean prepareNextRetry (){
     retryCount++;
     allFieldsPassedNoRetry=true;
-    this.loopStartTimeMs = System.currentTimeMillis();
+    this.loopStartTimeMs = Clock.currentTimeInMillis();
     return true;
   }
 

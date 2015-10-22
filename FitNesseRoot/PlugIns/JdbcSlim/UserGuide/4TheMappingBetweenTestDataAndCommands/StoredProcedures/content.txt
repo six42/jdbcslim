@@ -39,7 +39,7 @@
 |3          |Tom            |4567890               |Seoul     |Milkman   |
 |4          |Till           |332211                |Berlin    |Senator   |
 |5          |Sarah          |999999                |Paris     |Hero      |
-|6          |James          |5432                  |London    |Butler    |
+|6          |James          |#null#                  |London    |Butler    |
 |7          |Bert           |432                   |Washington|President |
 |8          |Kim            |1                     |New York  |Banker    |
 

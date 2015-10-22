@@ -1,8 +1,6 @@
 // Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
 package six42.fitnesse.jdbcslim;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -15,9 +13,10 @@ import fitnesse.testsystems.slim.results.SlimTestResult;
 public class SheetFixture {
 
 	private String _rawCommand = "";
-	private String _pre_fix = "%";
-	private String _post_fix = "%";
-	private final String _nullStr;
+	private final String _pre_fix = "%";
+	private final String _post_fix = "%";
+	private final String _nullStrOut;
+  private final String _nullStrIn;
 	private SheetCommandInterface commandExecuter;
 	private RetryManager retry = null;
 	
@@ -25,7 +24,8 @@ public class SheetFixture {
 
 		this._rawCommand = rawCommand;
 		this.commandExecuter = commandExecuter;
-		_nullStr = commandExecuter.Properties().getPropertyOrDefault(ConfigurationParameters.outputNullString, "#null#");
+		_nullStrOut = commandExecuter.Properties().getPropertyOrDefault(ConfigurationParameters.outputNullString, "#null#");
+    _nullStrIn = commandExecuter.Properties().getPropertyOrDefault(ConfigurationParameters.inputNullString, _nullStrOut);
 	}
 
 
@@ -44,19 +44,21 @@ public class SheetFixture {
 		
 		// If the output contains QUERY than we execute as a single query and don't check for parameters
 		if (commandExecuter.Properties().getProperty("query") != null) hasParameters = false;
+
+		List<List<String>> expextedTable = replaceNullInExpected(ParameterTable);
 		
-		commandExecuter.table(ParameterTable); 
+		commandExecuter.table(expextedTable); 
 		commandExecuter.beginTable();
 		
 		
     for(retry = new RetryManager(commandExecuter.Properties().getPropertyOrDefault(ConfigurationParameters.RETRY, "")); retry.shouldTryAgain(); ){
   		if (!hasParameters){
   			// Select Table Command
-  			result = processComandOnceAndCompareToExpected(ParameterTable, hasHeader);
+  			result = processComandOnceAndCompareToExpected(expextedTable, hasHeader);
   
   		}else{
   			
-  			result = processCommandLineByLine(ParameterTable, Header);
+  			result = processCommandLineByLine(expextedTable, Header);
   		}
     }
     if(commandExecuter.Properties().isDebug()) System.out.println(retry.toString());
@@ -125,11 +127,14 @@ public class SheetFixture {
 				String rawColumnName = Header.get(p);
 				if (HeaderLine.isInputColumn(rawColumnName)){
           String value = Line.get(p);
+          // Value could be null convert into a string  to avoid null pointer exception in replace for command
+          String sqlValue = (value == null) ? "null" : value;
 				  try{
-				    LineCommand = LineCommand.replaceAll("(?i)"+_pre_fix + HeaderLine.plainColumnName(rawColumnName)+ _post_fix, Matcher.quoteReplacement(value));
+				    LineCommand = LineCommand.replaceAll("(?i)"+_pre_fix + HeaderLine.plainColumnName(rawColumnName)+ _post_fix, Matcher.quoteReplacement(sqlValue));
 				  }catch(IllegalArgumentException e){
-				    throw new RuntimeException("Replacement failed. The given value '" + value + "' can't be used", e); 
+				    throw new RuntimeException("Replacement failed. The given value '" + sqlValue + "' can't be used", e); 
 				  }
+				  // Allows null for value
 				  commandExecuter.set(HeaderLine.plainColumnName(rawColumnName), value);
 				}
 			}
@@ -209,10 +214,10 @@ public class SheetFixture {
 			if (i < maxActual){
 				int LineResultIndex = H[i];
 				String expected = expectedLine.size() >i ?  expectedLine.get(i) : "";
-				if (expected == null) expected =_nullStr;
+				if (expected == null) expected =_nullStrOut;
 				if (LineResultIndex != -1){ // There is an actual output column with the same name 
 					String actual = actualLine.size() > LineResultIndex ?  actualLine.get(LineResultIndex) : "";
-					if(actual == null) actual = _nullStr;
+					if(actual == null) actual = _nullStrOut;
 					if (expectedLine.size() <= i){
 						// Additional Value
 					  retry.runFailed();
@@ -277,6 +282,21 @@ public class SheetFixture {
 		return lineResult;
 	}
 	
+    public List<List<String>> replaceNullInExpected(List<List<String>> expected) {
+      List<List<String>> result =  new ArrayList<List<String>>();
+      for(int l=0; l< expected.size(); l++){
+        List<String> line = new ArrayList<String>(expected.get(l));
+        if (l>0){
+          for(int c=0; c< line.size(); c++){
+            String cell = line.get(c);
+            if (_nullStrIn.equalsIgnoreCase(cell)) line.set(c, null);
+          }
+        }
+        result.add(line);
+        
+      }
+      return result;
+    }
 	
 		public List<List<String>> compareTableWithSort(List<List<String>> expected, List<List<String>>  actual, boolean sort) {
 			List<List<String>> result =  new ArrayList<List<String>>();
@@ -307,8 +327,8 @@ public class SheetFixture {
 
 			// Prepare Everything for comparing based on the given index columns
 			int[] headerMap = HeaderLine.mapActualHeaderToExpectedHeader(expectedHeader, actualHeader);
-			List<Integer> expectedSortKeys = HeaderLine.generateSortKeyList(expectedHeader);
-			List<Integer> actualSortKeys = HeaderLine.generateActualSortKeyList(expectedSortKeys, headerMap, expectedHeader.size());
+			List<HeaderCell> expectedSortKeys = HeaderLine.generateSortKeyList(expectedHeader);
+			List<HeaderCell> actualSortKeys = HeaderLine.generateActualSortKeyList(expectedSortKeys, headerMap, expectedHeader.size());
 			if(commandExecuter.Properties().isDebug()){
 				System.out.println("expectedSortKeys: "+ expectedSortKeys);
 				System.out.println("actualSortKeys: "+ actualSortKeys);

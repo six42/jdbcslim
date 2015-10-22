@@ -2,7 +2,7 @@
 #
 
 If you just want to see the row count of the recordset set the flag '''dbOnlyRowCount''' to the name of the column which should show the row count.
-In this case you might want to measure performance and then can set also one or all of the following:
+In this case you might want to measure performance. To do so set also one or all of the following:
 '''dbPerf''' - Total processing time in seconds
 '''dbPerfRetrieval''' - Time to get all rows and columns from the recordset from the database server into the application server 
 '''dbPerfExecution''' - Time to execute the statement on the database server  
@@ -14,7 +14,10 @@ from TestData d1 join TestData d2 join TestData d3 join TestData d4 join TestDat
 
 
 
-!| SQLCommand|TestDatabase|%SQL%          |dbOnlyRowCount=RowCount dbPerf=ProcessingTime dbPerfRetrieval=RetrievalTime dbPerfExecution=ExecutionTime|
+!| SQLCommand|TestDatabase|%SQL%          |!-dbOnlyRowCount=RowCount 
+dbPerf=ProcessingTime 
+dbPerfRetrieval=RetrievalTime 
+dbPerfExecution=ExecutionTime-!|
 |SQL         |RowCount?   |ProcessingTime?|RetrievalTime?                                      |ExecutionTime?                                      |
 |!-select d1.*, d2.*, d3.*
 from TestData d1 
@@ -31,10 +34,10 @@ join TestData d2
 join TestData d3 
 join TestData d4 
 join TestData d5 -!|32768    |<5             |<5            |<5            |
-|!-select d1.*, d2.*, d3.*, d4.*, d5.*, d6.*
-from TestData d1 
-join TestData d2 
-join TestData d3 
-join TestData d4 
-join TestData d5 
-join TestData d6 -!|262144|<10             |<10            |<10            |
+#|!-select d1.*, d2.*, d3.*, d4.*, d5.*, d6.*
+#from TestData d1 
+#join TestData d2 
+#join TestData d3 
+#join TestData d4 
+#join TestData d5 
+#join TestData d6 -!|262144|<10             |<10            |<10            |

@@ -11,6 +11,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.sql.*;
 
+import fitnesse.util.TimeMeasurement;
+
 public class SQLCommand extends SheetCommandBase {
 
   private final String defaultUpdateCountHeaderName = "Count";
@@ -86,37 +88,35 @@ public class SQLCommand extends SheetCommandBase {
 
 		
     String updateCountHeaderName = Properties().getPropertyOrDefault(ConfigurationParameters.dbUpdateCount, defaultUpdateCountHeaderName);
-    String nullInputValueStr = Properties().getPropertyOrDefault(ConfigurationParameters.inputNullString, Properties().getPropertyOrDefault(ConfigurationParameters.outputNullString, "#null#"));
 
 
     cstmt = dbConnection.prepareCall(sqlCommand);
 
-    SortedMap<Integer, String> outputParamterMap = setInputParameters(cstmt, nullInputValueStr);
+    SortedMap<Integer, String> outputParamterMap = setInputParameters(cstmt);
     
-    long startTime = System.currentTimeMillis();
+    TimeMeasurement executionTime = (new TimeMeasurement()).start();
     resultsAvailable = cstmt.execute();
-    float perfExecutionTimeSeconds = new Float(System.currentTimeMillis() - startTime)/1000;
-		
-    startTime = System.currentTimeMillis();
+    executionTime.stop();
+    TimeMeasurement retrievelTime = (new TimeMeasurement()).start();
     resultTable =getResultSetsAndUpdateCounts(cstmt, resultsAvailable,  updateCountHeaderName,
         Properties().getBooleanPropertyOrDefault(ConfigurationParameters.outputMultipleRecordsetsAsExtraColumns, true));
-    float perfRetrieveTimeSeconds = new Float(System.currentTimeMillis() - startTime)/1000;
+    retrievelTime.elapsedSeconds();
 
     String perfHeader;
     perfHeader = Properties().getPropertyOrDefault(ConfigurationParameters.dbPerf, disabledValue);
     if(!disabledValue.equalsIgnoreCase(perfHeader)){
       resultTable.get(0).add(perfHeader);
-      resultTable.get(1).add(String.valueOf(perfRetrieveTimeSeconds+perfExecutionTimeSeconds));
+      resultTable.get(1).add(String.format("%ts.%<tL", retrievelTime.elapsed()+executionTime.elapsed()));
     }
     perfHeader = Properties().getPropertyOrDefault(ConfigurationParameters.dbPerfExecution, disabledValue);
     if(!disabledValue.equalsIgnoreCase(perfHeader)){
       resultTable.get(0).add(perfHeader);
-      resultTable.get(1).add(String.valueOf(perfExecutionTimeSeconds));
+      resultTable.get(1).add(String.format("%ts.%<tL", executionTime.elapsed()));
     }
     perfHeader = Properties().getPropertyOrDefault(ConfigurationParameters.dbPerfRetrieval, disabledValue);
     if(!disabledValue.equalsIgnoreCase(perfHeader)){
       resultTable.get(0).add(perfHeader);
-      resultTable.get(1).add(String.valueOf(perfRetrieveTimeSeconds));
+      resultTable.get(1).add(String.format("%ts.%<tL", retrievelTime.elapsed()));
     }
     
     
@@ -166,7 +166,7 @@ public class SQLCommand extends SheetCommandBase {
     }
   }
 
-  protected SortedMap<Integer,String> setInputParameters(CallableStatement cstmt, final String nullInputValueStr) {
+  protected SortedMap<Integer,String> setInputParameters(CallableStatement cstmt) {
     List<List<String>> inputParamterList = null;
     SortedMap<Integer,String> outputParamterMap = new TreeMap<Integer,String>();
 
@@ -187,11 +187,7 @@ public class SQLCommand extends SheetCommandBase {
 
             if (inParameter && rowValues.containsKey(columnName)){ 
               Object obj = rowValues.get(columnName);
-              String value = null;
-              if(obj != null){
-                value = obj.toString();
-                if (nullInputValueStr.equalsIgnoreCase(value)) value = null;
-              }
+              String value = (obj != null) ? obj.toString() : null;
               
               if(scale == -1)cstmt.setObject(parameterIndex, value, sqlType); 
               else cstmt.setObject(parameterIndex, value, sqlType, scale);
