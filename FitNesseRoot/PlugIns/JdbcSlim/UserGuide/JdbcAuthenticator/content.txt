@@ -1,0 +1,19 @@
+!-FitNesse-! pages can be secured to control access to the Wiki. See [[Authentication][.FitNesse.UserGuide.AdministeringFitNesse.SecurityDescription]]
+
+As Jdbc Slim is used for database testing and most databases have user management 
+capacities it is straight forward to use the database to authenticate !-FitNesse-! users.  
+
+To do this follow these steps:
+
+1. Add the jdbc slim jar and the jdbc driver jar to the class path of !-FitNesse-!.
+2. In the [[plugins.properties][.FitNesse.UserGuide.AdministeringFitNesse.ConfigurationFile]] files add the following line
+!note Authenticator =six42.fitnesse.jdbcslim.JdbcAuthenticator
+3. Add a file !-JdbcAuthenticator.properties-! in the same folder as the plugins.properties
+4. The file must contain two lines which define the database driver and the database connection string
+'''No username or password must be specified!'''
+See example below 
+!note JDBCDRIVER=org.h2.Driver
+!note DBURL=jdbc:h2:mem:h2db;DB_CLOSE_DELAY=-1
+
+!3 Important: You should only use this Authenticator when you use SSL connections!
+Otherwise your database password is transfered in plain text via the network.
