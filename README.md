@@ -12,66 +12,7 @@ It is agnostic of database system specifics and has no code special to any datab
 Such things should be handled by the jdbc driver.
 Nevertheless the jdbc code is segregated from the slim code and adding any driver specific requirements can be done by simply changing a single class.
 
-##Contents:
-
-    Installation
-    User Guide *
-    |   1 A Simple Example + ...
-    |   2 Key Benefits * : More examples which showscase the benefit of jdbcSlim ...
-    |   3 Howto Configure The Database Connection + ...
-    |   4 The Mapping Between Test Data And Commands + ...
-    |   5 Parameters Of The SQL Command +
-    |   6 Output Options + ...
-    |   7 Using Sql In Scripts And Scenarios + ...
-    |   9 Null Trailing Spaces And Empty Strings +
-    |   Know Limitations +- ...
-    Xx Test More Drivers *
-        Csv Driver * ...
-        Derby Test * ...
-        Htwo Test * ...
-
-
-
-## Installation
-Install the latest FitNesse version first: github.com\unclebob\fitnesse
-
-Download the latest Jdbc Slim library from github.com\six42\jdbcslim
-
-variable defined: JdbcSlimLib=jdbcslim.jar
-
-Installation Path
-
-Adjust the below path if you installed at a different location
-This path is relative to the folder in which FitNesse got started
-variable defined: LibInstallPath=plugins\jdbcslim\
-
-The Jdbc Slim Library - always required
-
-classpath: plugins\jdbcslim\jdbcslim.jar
-
-Further dependencies
-This is only required to support encryption. It can be downloaded from https://github.com/dbfit/dbfit/releases/tag/v3.2.0
-
-classpath: plugins\jdbcslim\commons-codec-1.9.jar
-
-classpath: plugins\jdbcslim\dbfit-core-3.2.0.jar
-
-See the SuiteSetup pages for driver specific setup.
-JDBC driver used for the samples. Not required if you use a different JDBC driver
-
-plugins\jdbcslim\h2-1.4.188.jar
-
-plugins\jdbcslim\csvjdbc-1.0-18.jar
-
-## User Manual and Test Suite
-To access the user manual and run the examples copy all Jdbc Slim Fitnesse pages from github to FitNesseRoot\PlugIns
-Copy from github the folder plugins\jdbcslim\TestDB to plugins\jdbcslim\TestDB in your installation
-
-variable defined: TestDbPath=${LibInstallPath}TestDB\
-
-Execute the suite on .PlugIns.JdbcSlim.UserGuide
-
-
-## To build your own test pages
-1. include the Installation page on the root page of your suite
-2. include the SuiteSetup page or a page with similar content in the setup of your suite 
+###Read the documentation online 
+https://rawgit.com/six42/jdbcslim/master/JdbcSlim.htm
+###Or download it for correct formatting
+https://raw.githubusercontent.com/six42/jdbcslim/master/JdbcSlim.htm
