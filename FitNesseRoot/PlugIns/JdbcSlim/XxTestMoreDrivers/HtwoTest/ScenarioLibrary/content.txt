@@ -5,9 +5,11 @@
 !include -c .FitNesse.SuiteAcceptanceTests.ScenarioLibrary
 
 
+#!define TestSTART {@@@START: Test specific content} 
+#!define TestEND {@@@END: Test specific content} 
 !define Header { !define TestLibInstallPath (${LibInstallPath}!-) 
 !define JdbcSlimLib -!(${JdbcSlimLib})!-
-#Standard Test Page header
+***Standard Test Page header
 !define TEST_SYSTEM {slim}
 
 !path ${TestLibInstallPath}${JdbcSlimLib}
@@ -77,17 +79,19 @@
 !|Script|SQLCommand|StartupDatabase|
 |closeConnection                   |
 
-#START: Test specific content
-
 -!}
 
 
 !|scenario|given Jdbc Slim test page|page |
-|$IT=     |echo                     |@page|
+|given test page|@page|
+|and Test System setup is|${Header}|
+|and Setup content is|${StartupText}|
 
 
-!|scenario |and content is|content                                       |
-|given page|$IT           |with content|${Header}${StartupText}  @content|
+!|scenario |and JDBC Slim content is|content                                       |
+|given page|$IT           |with content|${Header}${StartupText} ${TestSTART}!-
+@content 
+-!${TestEND}|
 |make      |$IT           |a test page                                   |
 
 

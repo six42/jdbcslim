@@ -5,9 +5,18 @@ In such a case either the command should be adjusted or the column should be rem
 
 !include -c .FitNesse.SuiteAcceptanceTests.SuiteSlimTests.SetUp
 
+#!include -c .FitNesse.SuiteAcceptanceTests.SuiteSlimTests.SetUp?raw nix
+
+#!include -h .PlugIns.JdbcSlim.ScenarioLibrary 
+#!include -raw .PlugIns.JdbcSlim.ScenarioLibrary 
+
+
+#!define SLIM_FLAGS {-v}
+!define TestPageName {TestPage}
+
 !| script                          |
-|given Jdbc Slim test page|TestPage|
-|and content is                    |!-
+|given Jdbc Slim test page|${TestPageName}|
+|and test content is                    |!-
 
 !|SQLCommand|TestDatabase|select Profession from TestData where NAME= '%NAME%' and CITY= '%CITY%'|
 |NAME       |CITY        |AGE                            |PROFESSION?                            |
@@ -15,12 +24,14 @@ In such a case either the command should be adjusted or the column should be rem
 |Bert       |Washington  |50                             |                                       |
 |Kim        |New York    |60                             |                                       |
 
--! |                                                          
-|test results for page|TestPage        |should contain       |right, 2 wrong, 3 ignored, 0 exceptions<|
-|ensure               |content contains|span class="fail">AGE                                         |
-|reject               |content contains|span class="error"                                            |
-|check                |request page    |TestPage?executionLog|200                                     |
-|show                 |content                                                                        |
+-! |  
+|when page|${TestPageName}| is tested and HTML is extracted|
+|then |\d | assertions pass, | 2| fail, | 3| are ignored | 0 | exceptions thrown|
+|and cell |AGE | has result | fail|
+|show Symbol |$HTML_Input|
+|show Symbol |$HTML_Result|
+|get collapsed executon log for page|${TestPageName}|
+
 
 
 !include -c .FitNesse.SuiteAcceptanceTests.TearDown
