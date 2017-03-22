@@ -1,0 +1,38 @@
+Inline Parameters in SQL commands are given as ?{Input Column>Output Column:Type(Scale)=Default Value}
+
+
+Input Column = the name of the column which contains the input values
+Output Column = the name of the column which which contains the expected output value
+Type = the SQL datatype
+Scale = the scale parameter of the type
+Default Value = a default value which will be used if Input Column is not present in the table
+
+Either Input or Output must be given the remaing parameters are optional.
+
+
+
+!3 Table provides City as input - default will not be used
+!| SQLCommand|TestDatabase| select * from TestData where Name =?{Name:12(10)} and City =?{City:12(10)=Berlin}          | 
+|Name        |City  |ID?|Phone?|Profession?|
+|James       |London|   |      |           |
+
+!3 Table doesn't provides City as input - default will be used and a matching record found
+!| SQLCommand|TestDatabase| select * from TestData where Name =?{Name:12(10)} and City =?{City:12(10)=Berlin}       |
+|Name        |City?|ID?|Phone?|Profession?|
+|Bill        |Berlin     |   |      |     |     |
+
+
+
+!3 An external default overwrites an inline default 
+in the following example a default for City 
+is defined once in an external properties table 
+and once inline the the sql command
+the external definition overwrites the inline definition
+!3 a matching record for 'London' and not 'Berlin' is found
+!|Define Properties|myDefaults|
+|key                    |value     |
+|City                   |London    |
+
+!| SQLCommand|TestDatabase| select * from TestData where Name =?{Name:12(10)} and City =?{City:12(10)=Berlin}       |InputDefaults=myDefaults|
+|Name        |City?|ID?|Phone?|Profession?|
+|James        |London     |   |      |     |     |
