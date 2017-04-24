@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import fitnesse.testsystems.ExecutionResult;
 import fitnesse.testsystems.slim.results.SlimTestResult;
@@ -30,7 +31,7 @@ public class SheetFixture {
 
 
 
-	public List doTable(List<List<String>> ParameterTable){
+  public List<List<String>> doTable(List<List<String>> ParameterTable) {
 		List<List<String>> result = null;
 		List<String> Header = null;
 		boolean hasParameters = false;
@@ -129,6 +130,16 @@ public class SheetFixture {
           String value = Line.get(p);
           // Value could be null convert into a string  to avoid null pointer exception in replace for command
           String sqlValue = (value == null) ? "null" : value;
+          if (l == ParameterTable.size() - 1) {
+            if (Pattern
+                .compile(
+                    "(?i)" + _pre_fix
+                        + HeaderLine.plainColumnName(rawColumnName) + _post_fix)
+                .matcher(LineCommand).find(0)) {
+              // Dirty hack to add these to the list of used headers
+              commandExecuter.get(HeaderLine.plainColumnName(rawColumnName));
+            }
+          }
 				  try{
 				    LineCommand = LineCommand.replaceAll("(?i)"+_pre_fix + HeaderLine.plainColumnName(rawColumnName)+ _post_fix, Matcher.quoteReplacement(sqlValue));
 				  }catch(IllegalArgumentException e){
@@ -164,7 +175,11 @@ public class SheetFixture {
 			
 		}
 		// Color the Header Column	and update the total result set
-		result.add(0, HeaderLine.formatHeader(Header, resultHeader, _rawCommand, _pre_fix, _post_fix, commandExecuter.Properties())); 
+    result.add(
+        0,
+        HeaderLine.formatHeader(Header, resultHeader,
+            commandExecuter.getUsedColumnNames(), _rawCommand,
+            commandExecuter.Properties()));
 		
 		return result;
 	}
@@ -388,9 +403,4 @@ public class SheetFixture {
 		    result.add(0, HeaderLine.formatHeader(expected.get(0), expectedHeader));
 		    return result;
 		}
-
-		
-		
-		
-
 }

@@ -27,19 +27,23 @@ The values are separated with a ":".
 |c                 |i:2:4       |
 
 !4 Link this definition to the query with the '''dbQueryParameters''' key
-To avoid that the input columns are flageed red (as they are not used in string command replacements) add also the flag '''outputFlagUnusedInputColumns=false'''
    
-!|  SQLCommand|TransactionDatabase|select SQRT(?) as root|dbQueryParameters=inParameters outputFlagUnusedInputColumns=false|
+!|  SQLCommand|TransactionDatabase|select SQRT(?) as root|dbQueryParameters=inParameters|
 |No           |root?                                                                                                       |
 |9.0          |3.0                                                                                                         |
 |16.0         |4.0                                                                                                         |
 
-!|  SQLCommand|TransactionDatabase|select LPAD(?, ?, ?) as myString|dbQueryParameters=inParameters outputFlagUnusedInputColumns=false|
+!|  SQLCommand|TransactionDatabase|select LPAD(?, ?, ?) as myString|dbQueryParameters=inParameters|
 |inStr        |c                  |FILL                            |myString?                                                        |
 |xYz          |7                  |*                               |****xYz                                                          |
 |ABC          |5                  |-                               |--ABC                                                            |
 
-                                                             |
+!4 Or define the parameters inline in the cmd
+
+!|  SQLCommand|TransactionDatabase|select LPAD(?{inStr:12}, ?{c:4}, ?{FILL:12}) as myString|
+|inStr        |c                  |FILL                            |myString?                                                        |
+|xYz          |7                  |*                               |****xYz                                                          |
+|ABC          |5                  |-                               |--ABC                                                            |
 
 !*> Rollback the change to not impact future tests
 

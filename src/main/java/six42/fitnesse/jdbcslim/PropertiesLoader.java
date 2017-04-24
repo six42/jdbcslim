@@ -140,7 +140,8 @@ public class PropertiesLoader implements PropertiesInterface{
 				crypto = null;
 			}else{
 				crypto = CryptoFactories.getCryptoServiceFactory().getCryptoService(CryptoFactories.getCryptoKeyStoreFactory().newInstance(new File(value)));
-				System.out.println("New Key Store Location " + value);
+        if (isDebug())
+          System.out.println("New Key Store Location " + value);
 			}
 			return true;
 		}
@@ -354,7 +355,8 @@ public class PropertiesLoader implements PropertiesInterface{
 	 * @param propertyName
 	 * @return
 	 */
-	public String getSecretProperty(String propertyName) {
+	@Override
+  public String getSecretProperty(String propertyName) {
 		
 		String result = getPropertyOrDefault(secretTag+propertyName, null);
 		if (result == null){
@@ -363,29 +365,35 @@ public class PropertiesLoader implements PropertiesInterface{
 		return result;
 	}
 
-	public String getSecretProperty(ConfigurationParameters dbpassword){
+	@Override
+  public String getSecretProperty(ConfigurationParameters dbpassword){
 	  return getSecretProperty(dbpassword.toString());
 	}
 	
-	public String getProperty(String propertyName) {
+	@Override
+  public String getProperty(String propertyName) {
 		return getPropertyOrDefault(propertyName, null);
 	}
 	
-	public String getProperty(ConfigurationParameters propertyName){
+	@Override
+  public String getProperty(ConfigurationParameters propertyName){
 	  return getProperty(propertyName.toString());
 	}
 
-	public String getPropertyOrDefault(String propertyName, String defaultValue) {
+	@Override
+  public String getPropertyOrDefault(String propertyName, String defaultValue) {
 		String propertyValue = myProperties.get(propertyName.toLowerCase());
 		if (propertyValue == null) propertyValue =defaultValue;
 		return propertyValue;
 	}
 
-	 public String getPropertyOrDefault(ConfigurationParameters propertyName, String defaultValue) {
+	 @Override
+  public String getPropertyOrDefault(ConfigurationParameters propertyName, String defaultValue) {
 	   return getPropertyOrDefault(propertyName.toString(), defaultValue);
 	 }
 
-	public boolean isDebug(){
+	@Override
+  public boolean isDebug(){
 		return debugFlag;
 	}
 
@@ -393,7 +401,8 @@ public class PropertiesLoader implements PropertiesInterface{
 		debugFlag = getBooleanPropertyOrDefault(ConfigurationParameters.DEBUG, false);
 	}
 
-	public PropertiesLoader getSubProperties(String subPropertyName){
+	@Override
+  public PropertiesLoader getSubProperties(String subPropertyName){
     PropertiesLoader subParameters = null;
     subParameters = new PropertiesLoader();
       try {

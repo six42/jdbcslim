@@ -3,13 +3,19 @@ package six42.fitnesse.jdbcslim;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
-import java.util.TreeMap;
-import java.sql.*;
 
 import fitnesse.util.TimeMeasurement;
 
@@ -22,7 +28,8 @@ public class SQLCommand extends SheetCommandBase {
   private boolean mustCloseConnection;
 	static private Map<String, Connection> theConnections = new HashMap<String, Connection>();
 
-	private Map<String, String> rowValues = new HashMap<String, String>(); 
+  private Map<String, String> rowValues = new HashMap<String, String>();
+  private Map<String, String> usedRowValues = new HashMap<String, String>();
 
  	private Integer cacheMaxLoops;
 	
@@ -41,6 +48,7 @@ public class SQLCommand extends SheetCommandBase {
   @Override
   public void reset() {
     rowValues = new HashMap<String, String>();
+    usedRowValues = new HashMap<String, String>();
   }
 
   @Override
@@ -51,8 +59,18 @@ public class SQLCommand extends SheetCommandBase {
 
   @Override
   public String get(String columnName) {
-    // TODO Auto-generated method stub
-    return null;
+    usedRowValues.put(columnName.toLowerCase(), columnName.toLowerCase());
+    return rowValues.get(columnName.toLowerCase());
+  }
+
+  @Override
+  public boolean containsKey(String columnName) {
+    return rowValues.containsKey(columnName.toLowerCase());
+  }
+
+  @Override
+  public Set<String> getUsedColumnNames() {
+    return usedRowValues.keySet();
   }
   
  
@@ -90,9 +108,17 @@ public class SQLCommand extends SheetCommandBase {
     String updateCountHeaderName = Properties().getPropertyOrDefault(ConfigurationParameters.dbUpdateCount, defaultUpdateCountHeaderName);
 
 
-    cstmt = dbConnection.prepareCall(sqlCommand);
+    SQLStatement theStatement = new SQLStatement(sqlCommand);
+    theStatement.extractParametersFromCmd();
+    theStatement.addParametersFromProperties(Properties(),
+        ConfigurationParameters.dbQueryParameters);
+    theStatement.addDefaultsFromProperties(Properties(),
+        ConfigurationParameters.inputDefaults);
 
-    SortedMap<Integer, String> outputParamterMap = setInputParameters(cstmt);
+    cstmt = dbConnection.prepareCall(theStatement.sqlCommand());
+
+    SortedMap<Integer, String> outputParamterMap = theStatement
+        .setInputParameters(cstmt, this);
     
     TimeMeasurement executionTime = (new TimeMeasurement()).start();
     resultsAvailable = cstmt.execute();
@@ -164,48 +190,6 @@ public class SQLCommand extends SheetCommandBase {
       resultTable.get(0).add(entry.getValue());
       resultTable.get(1).add(value);
     }
-  }
-
-  protected SortedMap<Integer,String> setInputParameters(CallableStatement cstmt) {
-    List<List<String>> inputParamterList = null;
-    SortedMap<Integer,String> outputParamterMap = new TreeMap<Integer,String>();
-
-    String parameterName = Properties().getPropertyOrDefault(ConfigurationParameters.dbQueryParameters, "");
-    if (!parameterName.isEmpty()){
-        PropertiesLoader queryParameters = Properties().getSubProperties(parameterName);
-        inputParamterList = queryParameters.toTable();
-        //Skip the header start i at 1
-        for( int i =1 ; i < inputParamterList.size(); i++){
-          try{
-            String columnName = inputParamterList.get(i).get(0);
-            String [] paramValues = inputParamterList.get(i).get(1).split(":");
-            boolean inParameter = paramValues.length < 1 ? false : paramValues[0].toUpperCase().contains("I");
-            boolean outParameter = paramValues.length < 1 ? false : paramValues[0].toUpperCase().contains("O");
-            int parameterIndex = paramValues.length < 2 ? 0 : Integer.parseInt( paramValues[1]);
-            int sqlType = paramValues.length < 3 ? 0 : Integer.parseInt( paramValues[2]);
-            int scale = paramValues.length < 4 ? -1 : Integer.parseInt( paramValues[3]);
-
-            if (inParameter && rowValues.containsKey(columnName)){ 
-              Object obj = rowValues.get(columnName);
-              String value = (obj != null) ? obj.toString() : null;
-              
-              if(scale == -1)cstmt.setObject(parameterIndex, value, sqlType); 
-              else cstmt.setObject(parameterIndex, value, sqlType, scale);
-            }
-            if(outParameter){
-              if(scale == -1)  cstmt.registerOutParameter(parameterIndex, sqlType);
-              else         cstmt.registerOutParameter(parameterIndex, sqlType, scale);
-              outputParamterMap.put(parameterIndex, columnName);
-            }
-          }catch( NumberFormatException e){
-            throw new RuntimeException("Failed processing Query Parameter:"+ inputParamterList.get(i).get(0) + "=" + inputParamterList.get(i).get(1), e);
-          }catch( SQLException e){
-            throw new RuntimeException("Failed setting Query Parameter:"+ inputParamterList.get(i).get(0) + "=" + inputParamterList.get(i).get(1), e);
-          }
-
-        }
-    }
-    return outputParamterMap;
   }
 
   private  List<List<String>> getResultSetsAndUpdateCounts(Statement stmt, boolean resultSetAvailable,  String updateCountHeaderName, boolean extend) throws SQLException

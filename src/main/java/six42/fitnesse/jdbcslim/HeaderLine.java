@@ -2,7 +2,9 @@
 package six42.fitnesse.jdbcslim;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -102,25 +104,29 @@ public class HeaderLine {
 	}
 
 	static public List<String> formatHeader(List<String> originalExpectedHeader, List<String> resultHeader) {
-		return formatHeader(originalExpectedHeader, resultHeader, "", "", "", null);
+    return formatHeader(originalExpectedHeader, resultHeader,
+        new HashSet<String>(), "", null);
+
 	}
 
-	/***
-	 *  Checks that each parameter given in the header exists in the command, flag them as fail if not
-   *  Marks all Header columns which are new in the actual and don't exist in the expected
-   *  Mark Input Columns green if they have been used
-   *  
+	    /***
+   * Checks that each parameter given in the header exists in the command, flag
+   * them as fail if not Marks all Header columns which are new in the actual
+   * and don't exist in the expected Mark Input Columns green if they have been
+   * used
+   * 
    * TODO check also that the order of the Header columns is matching the output
    * 
    * @param originalExpectedHeader
-	 * @param resultHeader
-	 * @param rawCommand
-	 * @param pre_fix
-	 * @param post_fix
-	 * @param properties
-	 * @return
-	 */
-	static public List<String> formatHeader(List<String> originalExpectedHeader, List<String> resultHeader, String rawCommand, String pre_fix, String post_fix, PropertiesInterface properties) {
+   * @param resultHeader
+   * @param usedHeaderColumns
+   * @param rawCommand
+   * @param properties
+   * @return
+   */
+  public static List<String> formatHeader(List<String> originalExpectedHeader,
+      List<String> resultHeader, Set<String> usedHeaderColumns,
+      String rawCommand, PropertiesInterface properties) {
 
 	  
 		List<String> result = new ArrayList<String>();
@@ -140,12 +146,12 @@ public class HeaderLine {
 			}
 			else if (isOutputColumn(resultHeader.get(p)) || isCommentColumn(resultHeader.get(p))|| rawCommand.isEmpty()){
 				Cell = "report:" + resultHeader.get(p);
-				
-			}
-			else if(flagUnused && !rawCommand.contains(pre_fix + resultHeader.get(p) + post_fix)){
-				Cell = "fail:" + resultHeader.get(p);
+      } else if (usedHeaderColumns.contains(HeaderLine.plainColumnName(
+              resultHeader.get(p)).toLowerCase())) {
+        Cell = "pass:" + resultHeader.get(p);
 			}else{
-				Cell = "pass:" + resultHeader.get(p);
+        Cell = flagUnused ? "fail:" : "ignore:";
+        Cell = Cell + resultHeader.get(p);
 			}
 			result.add( Cell);
 		}
@@ -186,6 +192,4 @@ public class HeaderLine {
 	    }
 		return result;
 	}
-
-
 }

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -162,8 +163,12 @@ public class JdbcAuthenticator extends Authenticator {
       page.addTitles("401 Unauthorized");
       page.put("resource", request.getResource());
       page.setMainTemplate("unauthorized.vm");
-      response.setContent(page.html());
-
+      try {
+        response.setContent(page.html());
+      } catch (UnsupportedEncodingException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
       return response;
     }
   }

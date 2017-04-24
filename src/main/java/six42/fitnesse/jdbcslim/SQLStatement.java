@@ -149,9 +149,10 @@ class SQLStatement {
             else
               cstmt.setObject(parameterIndex, value, sqlType, scale);
           } else {
-            System.out
+            if (sqlCommand.Properties().isDebug()) {
+              System.out
                 .println("Unused Parameter (" + i + "):'" + columnName + "'");
-
+            }
           }
         }
         if (outParameter) {

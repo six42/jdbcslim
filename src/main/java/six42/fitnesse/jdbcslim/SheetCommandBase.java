@@ -3,8 +3,8 @@ package six42.fitnesse.jdbcslim;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-//import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 
 public class SheetCommandBase implements SheetCommandInterface {
@@ -63,8 +63,8 @@ public class SheetCommandBase implements SheetCommandInterface {
 	
 
 	
-	public List doTable(List<List<String>> ParameterTable){
-		// Always do this
+  public List<?> doTable(List<List<String>> ParameterTable) {
+    // Always do this
 		return myFixture.doTable(ParameterTable);
 	}
  
@@ -112,19 +112,23 @@ public class SheetCommandBase implements SheetCommandInterface {
 
 	}
 
+  @Override
 	public boolean success() {
 		return  this.success;
 	}
 
+  @Override
 	public String rawResult() {
 		if (rawResult != null) return this.rawResult;
 		else return this.resultSheet.toString();
 	}
 
+  @Override
 	public String command() {
 		return this.command;
 	}
 
+  @Override
 	public List<List<String>> resultSheet() {
 		return this.resultSheet;
 
@@ -167,7 +171,7 @@ public class SheetCommandBase implements SheetCommandInterface {
 	}
 
 	
-	public List compareSheet(List<List<String>> ParameterTable){
+  public List<?> compareSheet(List<List<String>> ParameterTable) {
 		// Always do this
 		return doTable(ParameterTable);
 	}
@@ -180,6 +184,18 @@ public class SheetCommandBase implements SheetCommandInterface {
 
   @Override
   public String get(String columnName) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public boolean containsKey(String columnName) {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  @Override
+  public Set<String> getUsedColumnNames() {
     // TODO Auto-generated method stub
     return null;
   }

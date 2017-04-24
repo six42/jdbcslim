@@ -2,7 +2,7 @@
 package six42.fitnesse.jdbcslim;
 
 import java.util.List;
-
+import java.util.Set;
 
 public interface SheetCommandInterface  {
 
@@ -29,5 +29,8 @@ public interface SheetCommandInterface  {
     public void set(String columnName, String value);
     public String get(String columnName);
     
+  boolean containsKey(String columnName);
+
+  Set<String> getUsedColumnNames();
 
 }

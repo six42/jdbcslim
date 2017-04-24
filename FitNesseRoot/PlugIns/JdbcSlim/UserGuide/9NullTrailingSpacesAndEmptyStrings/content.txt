@@ -13,8 +13,7 @@ To insert leading and trailing Spaces use the '''!-!- Denver -!''''''-!''' synta
 
 !|SQLCommand|TestDatabase|!-insert into TestData
 values (DEFAULT, ?, '%Phone%', '%City%', '%Profession%')-!|!-dbgetgeneratedkeys 
-dbQueryParameters=inParameters 
-outputFlagUnusedInputColumns=false-!|
+dbQueryParameters=inParameters-!|
 |SCOPE_IDENTITY()?|City  |Name|Phone|Profession|Count?|
 |$ID1=            |Berlin|#null#|12345|    |1     |
 |$ID2=            |!-     Denver-!|!-Bob     -! |6789 |    |1     |
@@ -42,8 +41,7 @@ if you must insert the string #null# in the database you can define a different 
 |City              |I:2:12:0    |
 
 !|SQLCommand|TestDatabase|update TestData set Name = ?, City = ? where ID ='%ID%'| !-inputNullString=--null-- 
-dbQueryParameters=inParameters 
-outputFlagUnusedInputColumns=false-!|
+dbQueryParameters=inParameters-!|
 |ID|City|Name|Count?|
 |$ID1            |--null--|#null#|1|
 

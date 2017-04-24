@@ -1,17 +1,13 @@
 #Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
 #
 Unused Input column names like [AGE] below are flagged as fail.
-In such a case either the command should be adjusted or the column should be removed.
+In such a case either
+ * the command should be adjusted or
+ * the column should be removed.
+ * To avoid that the input columns are flagged red  add the flag '''outputFlagUnusedInputColumns=false'''
 
 !include -c .FitNesse.SuiteAcceptanceTests.SuiteSlimTests.SetUp
 
-#!include -c .FitNesse.SuiteAcceptanceTests.SuiteSlimTests.SetUp?raw nix
-
-#!include -h .PlugIns.JdbcSlim.ScenarioLibrary 
-#!include -raw .PlugIns.JdbcSlim.ScenarioLibrary 
-
-
-#!define SLIM_FLAGS {-v}
 !define TestPageName {TestPage}
 
 !| script                          |
@@ -32,6 +28,14 @@ In such a case either the command should be adjusted or the column should be rem
 |show Symbol |$HTML_Result|
 |get collapsed executon log for page|${TestPageName}|
 
+If you must keep the column for any reason
+ * To avoid that the input columns are flagged red  add the flag '''outputFlagUnusedInputColumns=false'''
+
+!|SQLCommand|TestDatabase|select Profession from TestData where NAME= '%NAME%' and CITY= '%CITY%'|outputFlagUnusedInputColumns=false|
+|NAME       |CITY        |AGE                            |PROFESSION?                            |
+|James      |London      |43                             |                                       |
+|Bert       |Washington  |50                             |                                       |
+|Kim        |New York    |60                             |                                       |
 
 
 !include -c .FitNesse.SuiteAcceptanceTests.TearDown

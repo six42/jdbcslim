@@ -2,6 +2,7 @@
 package six42.fitnesse.jdbcslim;
 
 import java.util.List;
+import java.util.Set;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -21,7 +22,7 @@ public class SheetEcho implements SheetCommandInterface {
 		myFixture = new SheetFixture("", this); 
 	}
 
-	public List doTable(List<List<String>> ParameterTable){
+  public List<?> doTable(List<List<String>> ParameterTable) {
 		// Always do this
 		return myFixture.doTable(ParameterTable);
 	}
@@ -75,11 +76,13 @@ public class SheetEcho implements SheetCommandInterface {
 		return success;
 	}
 
+  @Override
 	public String rawResult() {
 		if (rawResult != null) return this.rawResult;
 		else return this.resultSheet.toString();
 	}
 
+  @Override
 	public String command() {
 		return this.command;
 	}
@@ -102,6 +105,18 @@ public class SheetEcho implements SheetCommandInterface {
 
   @Override
   public String get(String columnName) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public boolean containsKey(String columnName) {
+    // TODO Auto-generated method stub
+    return false;
+  }
+
+  @Override
+  public Set<String> getUsedColumnNames() {
     // TODO Auto-generated method stub
     return null;
   }
