@@ -1,0 +1,9 @@
+---
+LastModifyingUser: six42
+Suite
+SymbolicLinks
+  Tests: .PlugIns.JdbcSlim.UserGuide
+Test: no
+---
+!1 Test suite [[H2][http://www.h2database.com]] 
+!contents -R2 -g -p -f -h

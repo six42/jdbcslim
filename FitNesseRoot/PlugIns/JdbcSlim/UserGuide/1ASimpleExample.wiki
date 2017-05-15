@@ -1,0 +1,73 @@
+---
+LastModifyingUser: six42
+---
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+Most Tests require three steps.
+1. Preparing test data
+2. Execution some business functions
+3. Validating the impact on the test data
+
+Lets assume we have a database with some information about people and a we need to test a business function that relocates a person into a new city.  
+
+!3 1 Preparing test data
+
+To avoid side effects we execute the test in a transaction
+!|Script|SQLCommand|TransactionDatabase|
+|open Connection                       |
+|execute|begin transaction             |
+
+To prepare test data two approaches are possible:
+1.1 Inserting new data into a database
+1.2 Finding suitable existing data in the database
+
+
+In this examples we use the second approach and find the ID of users named Ben and Sarah which should move. 
+We store the Id of the users in a Slim Symbol '$TestID' for future reference.
+
+!| SQLCommand|TransactionDatabase|select ID, NAME from TestData where Name ='%NAME%'|
+|ID?         |NAME                                                                  |
+|$TestID1=   |Ben                                                                   |
+|$TestID2=   |Sarah                                                                 |
+
+Before we proceed we validate that Ben and Sarah still live in the old Cities: Denver and Paris
+
+!| SQLCommand|TransactionDatabase|select City from TestData where ID ='%ID%'|
+|ID          |CITY?                                                         |
+|$TestID1    |Denver                                                        |
+|$TestID2    |Paris                                                         |
+
+!3 Execution some business functions
+
+Here calls to your business code will go.
+A simple update statement which can do the job is given below.
+!|  SQLCommand|TransactionDatabase|update TestData set City='%NewCITY%' where ID ='%ID%'||
+|ID           |NewCITY            |Count?                                                |
+|$TestID1     |HongKong           |1                                                     |
+|$TestID2     |Tokyo              |1                                                     |
+
+
+!3 Validating the impact on the test data
+
+Finally we check that Ben now lives in Hong Kong and Sarah in Tokyo
+
+!| SQLCommand|TransactionDatabase|select City from TestData where ID ='%ID%'|
+|ID          |CITY?                                                         |
+|$TestID1    |HongKong                                                      |
+|$TestID2    |Tokyo                                                         |
+
+!3 Rollback the change to not impact future tests
+
+!|Script|SQLCommand|TransactionDatabase|
+|open Connection                       |
+|execute|rollback                      |
+|close Connection                      |
+
+!4 Check that the rollback worked
+!| SQLCommand|TransactionDatabase|select City from TestData where ID ='%ID%'|
+|ID          |CITY?                                                         |
+|$TestID1    |Denver                                                        |
+|$TestID2    |Paris                                                         |
+
+
+!contents -R2 -g -p -f -h

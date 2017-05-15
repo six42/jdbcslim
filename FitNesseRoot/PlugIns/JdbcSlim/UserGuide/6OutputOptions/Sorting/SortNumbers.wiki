@@ -1,0 +1,37 @@
+---
+LastModifyingUser: six42
+Test
+---
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+
+Given a field like 'Phone' contains numbers 
+Then the column must be sorted based on number logic and not string logic.
+
+use the flag 'd' next to the sort indicator to indicate integral decimal sorting
+use the flag 'f' to indicate floating point sorting
+
+!| SQLCommand|TestDatabase|select * from TestData|SORT   QUERY      |
+|ID          |City       |Name                 |Phone<d  |Profession|
+|6           |London      |James                 |#null#   |Butler    |
+|8           |New York    |Kim                   |1      |Banker    |
+|7           |Washington  |Bert                  |432    |President |
+|2           |Denver      |Ben                   |6789   |Artist    |
+|1           |Berlin      |Bill                  |12345  |Doctor    |
+|4           |Berlin      |Till                  |332211 |Senator   |
+|5           |Paris       |Sarah                 |999999 |Hero      |
+|3           |Seoul       |Tom                   |4567890|Milkman   |
+
+
+!| SQLCommand|TestDatabase|select * from TestData|SORT   QUERY      |
+|ID          |City       |Name                 |Phone<f  |Profession|
+|6           |London      |James                 |#null#   |Butler    |
+|8           |New York    |Kim                   |1      |Banker    |
+|7           |Washington  |Bert                  |432    |President |
+|2           |Denver      |Ben                   |6789   |Artist    |
+|1           |Berlin      |Bill                  |12345  |Doctor    |
+|4           |Berlin      |Till                  |332211 |Senator   |
+|5           |Paris       |Sarah                 |999999 |Hero      |
+|3           |Seoul       |Tom                   |4567890|Milkman   |
+
+!contents -R2 -g -p -f -h

@@ -1,0 +1,57 @@
+---
+LastModifyingUser: six42
+Prune
+Test
+---
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+!contents -R2 -g -p -f -h
+
+
+!*> To avoid side effects we execute the test in a transaction
+!|Script|SQLCommand|TransactionDatabase|
+|open Connection                       |
+|execute|begin transaction             |
+
+*!
+
+!3 Calling a SP with '''call'''
+H2 returns the result as recordset and not as value.
+The recordset has no header name this is not usable.
+For H2 it is better to use select and not call. 
+
+!|Define Properties|StoredProcedures   |
+|key               |value              |
+|.include          |TransactionDatabase|
+
+
+!|Define Properties|outParameters|
+|key               |value        |
+|Result            |O:1:8:0      |
+
+
+!|  SQLCommand|StoredProcedures|?= call SQRT(%No%)|dbQueryParameters=outParameters|
+|No           |Result?                                                            |
+|16           |4.0                                                                |
+|81           |9.0                                                                |
+
+!*> Rollback the change to not impact future tests
+
+!|Script|SQLCommand|TransactionDatabase|
+|open Connection                       |
+|execute|rollback                      |
+|close Connection                      |
+
+!4 Check that the rollback worked
+!|SQLCommand|StartupDatabase|select * from TestData|Query                |
+|ID         |Name           |Phone                 |City      |Profession|
+|1          |Bill           |12345                 |Berlin    |Doctor    |
+|2          |Ben            |6789                  |Denver    |Artist    |
+|3          |Tom            |4567890               |Seoul     |Milkman   |
+|4          |Till           |332211                |Berlin    |Senator   |
+|5          |Sarah          |999999                |Paris     |Hero      |
+|6          |James          |#null#                |London    |Butler    |
+|7          |Bert           |432                   |Washington|President |
+|8          |Kim            |1                     |New York  |Banker    |
+
+*!

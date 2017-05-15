@@ -1,0 +1,18 @@
+---
+Help
+Suites
+---
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+!3 Rollback the change to not impact future tests
+
+!|Script|SQLCommand|TransactionDatabase|debug|
+|open Connection                             |
+|execute|rollback                            |
+|close Connection                            |
+
+!4 Check that the rollback worked
+!| SQLCommand|TransactionDatabase|select City from TestData where ID ='%ID%'|
+|ID          |CITY?                                                         |
+|$TestID     |Denver                                                        |
+|$TestID2    |Paris                                                         |

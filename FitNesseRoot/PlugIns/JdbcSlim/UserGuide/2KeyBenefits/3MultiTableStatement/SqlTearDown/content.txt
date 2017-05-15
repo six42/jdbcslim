@@ -1,7 +1,0 @@
-#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
-#
-!3 Close the connection
-!|Script        |
-|closeConnection|
-
-!contents -R2 -g -p -f -h

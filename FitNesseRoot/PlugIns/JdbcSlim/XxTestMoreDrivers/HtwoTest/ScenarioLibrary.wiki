@@ -1,0 +1,100 @@
+---
+LastModifyingUser: six42
+---
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+!contents -R2 -g -p -f -h
+
+!include -c .FitNesse.SuiteAcceptanceTests.ScenarioLibrary
+
+
+#!define TestSTART {@@@START: Test specific content} 
+#!define TestEND {@@@END: Test specific content} 
+!define Header { !define TestLibInstallPath (${LibInstallPath}!-) 
+!define JdbcSlimLib -!(${JdbcSlimLib})!-
+***Standard Test Page header
+!define TEST_SYSTEM {slim}
+
+!path ${TestLibInstallPath}${JdbcSlimLib}
+!path ${TestLibInstallPath}h2-1.4.188.jar
+!path ${TestLibInstallPath}dbfit-core-3.2.0.jar
+
+
+|import                 |
+|six42.fitnesse.jdbcslim|
+
+!| define table type|
+|SQLCommand|as Table|
+
+
+!|DefineProperties|TestDatabase                      |
+|key              |value                             |
+|jdbcDriver       |org.h2.Driver                     |
+|DBURL            |jdbc:h2:mem:h2db;DB_CLOSE_DELAY=-1|
+|DBUSER           |na                                |
+|DBPASSWORD       |na                                |
+|CMD              |                                  |
+
+-!}
+
+!define StartupText {!-
+!|Define Properties|StartupDatabase|
+|key               |value          |
+|.include          |TestDatabase   |
+|dbconnection      |h2init         |
+|dbupdatecount     |false          |
+|dbgetgeneratedkeys|false          |
+
+
+!|Script|SQLCommand                                                   |StartupDatabase                                                  |
+|openConnection                                                                                                                         |
+|execute|drop table if exists TestData                                                                                                  |
+|show   |success                                                                                                                        |
+|show   |rawResult                                                                                                                      |
+|show   |resultSheet                                                                                                                    |
+|execute|create table TestData (Id int identity(1,1), Name varchar(255), Phone varchar(255), City varchar(255), Profession varchar(255))|
+|show   |success                                                                                                                        |
+|show   |rawResult                                                                                                                      |
+|show   |resultSheet                                                                                                                    |
+
+!|SQLCommand      |StartupDatabase|insert into TestData values (DEFAULT, '%Name%', '%Phone%', '%City%', '%Profession%')|dbgetgeneratedkeys|
+|SCOPE_IDENTITY()?|City           |Name                                                                                |Phone  |Profession|
+|1                |Berlin         |Bill                                                                                |12345  |Doctor    |
+|2                |Denver         |Ben                                                                                 |6789   |Artist    |
+|3                |Seoul          |Tom                                                                                 |4567890|Milkman   |
+|4                |Berlin         |Till                                                                                |332211 |Senator   |
+|5                |Paris          |Sarah                                                                               |999999 |Hero      |
+|6                |London         |James                                                                               |5432   |Butler    |
+|7                |Washington     |Bert                                                                                |432    |President |
+|8                |New York       |Kim                                                                                 |1      |Banker    |
+
+!|SQLCommand|StartupDatabase|select * from TestData|Query                |
+|ID         |Name           |Phone                 |City      |Profession|
+|1          |Bill           |12345                 |Berlin    |Doctor    |
+|2          |Ben            |6789                  |Denver    |Artist    |
+|3          |Tom            |4567890               |Seoul     |Milkman   |
+|4          |Till           |332211                |Berlin    |Senator   |
+|5          |Sarah          |999999                |Paris     |Hero      |
+|6          |James          |5432                  |London    |Butler    |
+|7          |Bert           |432                   |Washington|President |
+|8          |Kim            |1                     |New York  |Banker    |
+
+!|Script|SQLCommand|StartupDatabase|
+|closeConnection                   |
+
+-!}
+
+
+!|scenario|given Jdbc Slim test page|page |
+|given test page|@page|
+|and Test System setup is|${Header}|
+|and Setup content is|${StartupText}|
+
+
+!|scenario |and JDBC Slim content is|content                                       |
+|given page|$IT           |with content|${Header}${StartupText} ${TestSTART}!-
+@content 
+-!${TestEND}|
+|make      |$IT           |a test page                                   |
+
+

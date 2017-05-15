@@ -1,0 +1,99 @@
+---
+LastModifyingUser: six42
+Test
+---
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+Tests should be focused on requirements and in business users language.
+On the other hand to implement the tests often additional configuration data is required.
+To keep these separate '''Define Properties''' can be used.
+They are like property files used commonly in Java.
+They define key value pairs of strings
+
+Define Properties have the following advantages:
+* Properties can be defined on Wiki pages
+* Properties can be defined in files
+* Multiple property definitions can be merged into one big definition
+* Properties like passwords can be encrypted
+* A summary of all definitions can be added to the test results to track how the test was performed
+* Slim Symbols or Wiki Variables can be used to switch between different sets of properties 
+
+
+!contents -R2 -g -p -f -h
+
+This page tests the combination of properties definition on this Fitnesse test page plus in a properties file. From the file again a definition 
+on the wiki page is referenced.
+
+The definitions are then used/printed in a Sheet Fixture to confirm the correctness.
+
+The following rules applies
+ * In files lines or keys starting with "#" are comments and will be ignored
+ * All keys are trimmed and converted to lower case 
+ * If multiple entries for the same key exist only the value from the last one will remain
+ * A key ".include" will add the content of "Sheet Definition Fixture" whose name matches the value. If such a definition doesn't exist content from a file with this name will be included. If no such file can be found the test will fail with an exception.  
+ * A key ".keyStoreLocation" will load a file with a different encryption key
+ * Values which must span multiple lines can be inserted in files between triple quotes """. See sample file below.
+
+To test this page you need a file with the following content:
+
+!*** File Content
+Version=v20131230
+
+jdbcDriver=com.sybase.jdbc4.jdbc.SybDriver
+DBURL=jdbc:sybase:Tds:localhost/master
+DBUSER=sa
+#Use the Encrypt.bat tool to encrypt the password and store the encrypted PW here
+DBPASSWORD=password
+#include again content from this wiki page
+.include=SubDefinition
+# Below text is spanning multiple lines
+multiLine="""
+Line1
+Line2
+Line3
+"""
+nextKey=Something Else
+***!
+
+The file must be named as defined in the following variable:
+!define DefinitionFileName (${TestDbPath}definition.properties)
+
+
+
+!|Define Properties|TopDefinition                       |
+|key               |value                               |
+|cmd               |myCommand with %NAME%, %CITY%, %AGE%|
+|DEBUG             |                                    |
+|COMMAND           |YES                                 |
+|.include          |${DefinitionFileName}               |
+|multiLine2                                             |!-Hello
+World-!| 
+
+The below "SubDefinition" will be included from the above file 
+
+
+!|Define Properties|SubDefinition              |
+|key               |value                      |
+|SORT              |1,2,3,4                    |
+|format.date       |YYYY-MM-DD                 |
+|version           |OverwrittenFromSubDefintion|
+
+Check that all the content is now available
+!| Table: SheetCommandBase|TopDefinition      |      |SORT     |
+|Key?<1                   |Value?                              |
+|cmd                      |myCommand with %NAME%, %CITY%, %AGE%|
+|command                  |YES                                 |
+|dbpassword               |password                            |
+|dburl                    |jdbc:sybase:Tds:localhost/master    |
+|dbuser                   |sa                                  |
+|debug                    |                                    |
+|format.date              |YYYY-MM-DD                          |
+|jdbcdriver               |com.sybase.jdbc4.jdbc.SybDriver     |
+|multiline                                                     |!-Line1
+Line2
+Line3-!|
+|multiline2|!-Hello
+World-!|
+|nextkey|Something Else             |
+|sort   |                           |
+|version|OverwrittenFromSubDefintion|

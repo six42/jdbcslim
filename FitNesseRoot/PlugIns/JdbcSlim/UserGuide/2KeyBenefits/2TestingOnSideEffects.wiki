@@ -1,0 +1,47 @@
+---
+LastModifyingUser: six42
+Test
+---
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+To test that code is working it is not enough to check that the code changed the expected data.
+It must also be tested that no other data got changed.
+
+JdbcSlim supports this in the following way.
+
+Going back to our initial example where Ben and Sarah moved location.
+Additional we want to check that no other user got moved.
+
+!3 Define the query
+!|Define Properties|SideEffectCheck                                                                           |
+|key               |value                                                                                     |
+|.include          |TestDatabase                                                                              |
+|cmd               |select * from TestData where Name not in ('Ben', 'Sarah')                                 |
+|#                 |The 'query' flag below tells SQL Command that this statement will return more than one row|
+|query             |true                                                                                      |
+
+!3 Store the data of the other people before the test
+
+!|Script   |SQLCommand|SideEffectCheck|
+|open connection                      |
+|execute                              |
+|$RSBefore=|resultSheet               |
+|close connection                     |
+
+
+!3 Run the test
+
+!include -c .PlugIns.JdbcSlim.UserGuide.1ASimpleExample 
+#
+
+
+!3 Compare the data of the other people after the test.
+
+!|Script  |SQLCommand  |SideEffectCheck|
+|open connection                       |
+|execute                               |
+|$RSAfter=|resultSheet                 |
+|$RSDiff= |compareSheet|$RSBefore      |
+|close connection                      |
+
+!|Table:SheetEcho|$RSDiff|

@@ -1,0 +1,24 @@
+---
+LastModifyingUser: six42
+Test
+---
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+
+!|Script|SQLCommand                                        |TestDatabase                                       |
+|open Connection                                                                                               |
+|execute|create alias IF NOT EXISTS selectStar for "six42.fitnesse.jdbcslim.SampleStoredProcedure.showTestData"|
+|show   |success                                                                                               |
+|show   |rawResult                                                                                             |
+|show   |resultSheet                                                                                           |
+|execute|create alias IF NOT EXISTS myQuery for "six42.fitnesse.jdbcslim.SampleStoredProcedure.myquery"        |
+|show   |success                                                                                               |
+|show   |rawResult                                                                                             |
+|show   |resultSheet                                                                                           |
+|close Connection                                                                                              |
+
+
+!|  SQLCommand|TestDatabase|call myquery('select * from TestData where Profession = ''Milkman''')|QUERY           |
+|ID           |Name        |Phone                                                                |City |Profession|
+|3            |Tom         |4567890                                                              |Seoul|Milkman   |
+
