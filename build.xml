@@ -19,7 +19,7 @@
   
     <path id="jdbcslim-classpath">
 		<fileset dir="${dist.dir}">
-			<include name="commons-codec-1.9.jar"/>
+			<include name="commons-codec-1.10.jar"/>
 			<include name="csvjdbc-1.0-18.jar"/>
 			<include name="fitnesse-standalone.jar"/>
 			<include name="dbfit-core-3.2.0.jar"/>
@@ -88,6 +88,13 @@
                         <arg value="PlugIns.JdbcSlim.UserGuide?suite&amp;format=html" />
                 </java>
         </target>
+        <target name="run" depends="jar">
+                <java jar="${dist.dir}/fitnesse-standalone.jar" failonerror="true" fork="true">
+					<arg value="-p" />
+					<arg value="${env.FITNESSE_TEST_PORT}"/>
+                </java>
+        </target>
+
 	<target name="set-version-if-not-manualy-set" unless="version">
 		<tstamp />
 		<property name="version" value="${DSTAMP}" />

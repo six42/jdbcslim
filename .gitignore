@@ -47,3 +47,5 @@ classes/*
 
 # Jar files should only go into releases
 *.jar
+
+FitNesseRoot/RecentChanges.wiki

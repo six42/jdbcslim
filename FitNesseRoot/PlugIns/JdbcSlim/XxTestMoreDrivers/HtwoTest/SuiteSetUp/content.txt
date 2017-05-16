@@ -9,7 +9,7 @@
 
 *!
 !*> Driver specific setup 
-!path ${LibInstallPath}h2-1.4.188.jar
+!path ${LibInstallPath}h2-1.4.195.jar
 
 !|Define Properties|TestDatabase                      |
 |key               |value                             |
