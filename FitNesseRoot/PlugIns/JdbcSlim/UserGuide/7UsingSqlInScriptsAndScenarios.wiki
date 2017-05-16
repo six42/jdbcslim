@@ -1,0 +1,70 @@
+---
+LastModifyingUser: six42
+Test
+---
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+!contents -R2 -g -p -f -h
+
+This page demonstrates the SQL Command fixture in a script and a scenario.
+The scenario uses two  queries.
+It also shows additional methods available to analyse the returned data.
+
+!1 Calling the SQLCommand directly in a Script
+
+!|Define Properties|ScriptDefinition      |
+|key               |value                 |
+|.include          |TestDatabase          |
+|cmd               |select * from TestData|
+
+!|Script|SQLCommand|ScriptDefinition|
+|openConnection                     |
+|execute                            |
+|show   |success                    |
+|show   |rawResult                  |
+|show   |resultSheet                |
+|$RSOne=|resultSheet                |
+|closeConnection                    |
+
+!1 Using SQLCommand in a scenario
+
+!2 The Scenario with two execute statements
+!|Scenario|TheId               |id   |isNamed|name|andHasPhone|phone|
+|execute  |select Name from TestData where ID = '@id'               |
+|show     |success                                                  |
+|show     |rawResult                                                |
+|show     |resultSheet                                              |
+|check    |getColumnValueByName|NAME |@name                         |
+|#                                                                  |
+|execute  |select * from TestData where ID = '@id'                  |
+|show     |success                                                  |
+|show     |rawResult                                                |
+|show     |resultSheet                                              |
+|check    |getColumnValueByName|Phone|@phone                        |
+
+
+
+!2 Start the test
+!3 Open a connection
+!|Script|SQLCommand|ScriptDefinition|
+|openConnection                     |
+
+
+!3 Call the scenario in a Decision Table
+
+!|The Id  Is Named And Has Phone|
+|id      |name       |phone     |
+|2       |Ben        |>0        |
+|4       |Till       |>100      |
+|3       |Tom        |>10       |
+|2       |=~/Be/     |>5        |
+
+!3 Call the scenario in a Script Table
+
+!|script                                 |
+|TheId|5|IsNamed|Sarah|AndHasPhone|999999|
+
+
+!3 Close the connection
+!|Script        |
+|closeConnection|

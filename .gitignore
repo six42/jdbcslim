@@ -49,3 +49,6 @@ classes/*
 *.jar
 
 FitNesseRoot/RecentChanges.wiki
+
+# IDE files
+/.idea/

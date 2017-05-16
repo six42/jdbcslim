@@ -1,0 +1,9 @@
+---
+LastModifyingUser: six42
+Suite
+SymbolicLinks
+  Tests: .PlugIns.JdbcSlim.UserGuide
+Test: no
+---
+!1 Test suite [[derby database][http://db.apache.org/derby/]] 
+!contents -R2 -g -p -f -h

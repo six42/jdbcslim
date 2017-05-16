@@ -1,0 +1,12 @@
+---
+Help
+LastModifyingUser: six42
+Suite
+Suites
+SymbolicLinks
+  Tests: .PlugIns.JdbcSlim.UserGuide
+---
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+!1 Test suite csv jdbc driver
+!contents -R2 -g -p -f -h

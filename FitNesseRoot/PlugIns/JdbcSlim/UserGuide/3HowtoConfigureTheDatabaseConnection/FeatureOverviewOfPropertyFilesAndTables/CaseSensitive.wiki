@@ -1,0 +1,30 @@
+---
+LastModifyingUser: six42
+Test
+---
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+The definition names are case sensitive
+The keys are not case sensitive. only the last defined key will be available in the result map. 
+
+!| Define Properties|Def1            |
+|key                |value           |
+|Hello              |World           |
+|Mad                |Max             |
+|Cmd                |select GetDate()|
+|HELLO              |Heaven          |
+
+
+!| Script: Define Properties|                                                                      |
+|check                      |show|Def1|{Hello=World, Mad=Max, Cmd=select GetDate(), HELLO=Heaven, }|
+|check                      |show|def1|ERROR:No Definitions exists under this name.                |
+
+
+!| Table: SheetCommandBase|Def1  |  |SORT  |
+|Key?<1                   |Value?          |
+|cmd                      |select GetDate()|
+|hello                    |Heaven          |
+|mad                      |Max             |
+|sort                     |                |
+
+

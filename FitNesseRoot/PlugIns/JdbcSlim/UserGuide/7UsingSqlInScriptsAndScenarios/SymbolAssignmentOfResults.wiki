@@ -1,0 +1,86 @@
+---
+LastModifyingUser: six42
+Test
+---
+#Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+!contents -R2 -g -p -f -h
+
+This page calls the SQL Command fixture in a scenario
+Results returned are assigned to symbols and can be used in future queries or fixtures.
+
+!***> setup
+
+
+|import            |
+|fitnesse.slim.test|
+
+|library    |
+|echo script|
+
+
+*!
+
+
+!5 Assign results from a query to symbols
+!| SQLCommand|TestDatabase|select Id, Name from TestData where ID = '%X%'|
+|X           |ID?         |NAME?                                         |
+|2           |<= 3        |$Name2=                                       |
+|4           |>= 4        |$Name4=                                       |
+|2           |1<_ <3      |Ben                                           |
+|3           |$Id3=       |                                              |
+
+|script                |
+|check|echo|$Name2|Ben |
+|check|echo|$Name4|Till|
+|check|echo|$Id3  |3   |
+ 
+!|Define Properties|DefinitionOne                          |
+|key               |value                                  |
+|cmd               |select * from Elements where ID = '%X%'|
+|.include          |TestDatabase                           |
+
+
+
+
+
+!1 Scenario with two execute statements returning the result in symbols
+!|Scenario|TheId               |id   |isNamed|name|andHasPhone|phone|
+|execute  |select * from TestData where ID = '@id'                  |
+|show     |success                                                  |
+|show     |rawResult                                                |
+|show     |resultSheet                                              |
+|$name=   |getColumnValueByName|Name |                              |
+|#                                                                  |
+|execute  |select * from TestData where ID = '@id'                  |
+|show     |success                                                  |
+|show     |rawResult                                                |
+|show     |resultSheet                                              |
+|$phone=  |getColumnValueByName|Phone|                              |
+
+
+
+!1 Start the test
+!3 Open a connection
+!|Script|SQLCommand|DefinitionOne|
+|openConnection                  |
+
+
+!3 Call the scenario
+
+!|TheIdIsNamedAndHasPhone|
+|id  |name?    |phone?   |
+|2   |$Name2=  |>0       |
+|4   |$Name44= |>100     |
+|3   |Tom      |$Phone3= |
+|2   |=~/Be/   |>5       |
+
+|script                    |
+|check|echo|$Name2 |Ben    |
+|check|echo|$Name44|Till   |
+|check|echo|$Phone3|4567890|
+
+
+!3 Close the connection
+!|Script        |
+|closeConnection|
