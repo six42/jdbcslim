@@ -9,7 +9,7 @@ import java.util.Set;
 
 public class SheetCommandBase implements SheetCommandInterface {
 
-	protected String command = ""; 
+	private String command = "";
 	protected SheetFixture myFixture;
 	protected String rawResult = null;
 	protected List<List<String>> resultSheet;
@@ -25,7 +25,7 @@ public class SheetCommandBase implements SheetCommandInterface {
 		}
     String commandToUse = getCommandIfMissing(configurationOptions, rawCommand);
     setCommand(commandToUse);
-		myFixture = new SheetFixture(command,  this);
+		myFixture = new SheetFixture(command(),  this);
 	}
 
 	public SheetCommandBase(String configurationOptions,  String rawCommand) throws FileNotFoundException, IOException{
