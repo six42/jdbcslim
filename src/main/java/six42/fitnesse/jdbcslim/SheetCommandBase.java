@@ -23,8 +23,9 @@ public class SheetCommandBase implements SheetCommandInterface {
 		if (outputFormatOptions != null) {
 			parseConfigurationString(outputFormatOptions);
 		}
-		command = getCommandIfMissing(configurationOptions, rawCommand);
-		myFixture = new SheetFixture(command,  this); 
+    String commandToUse = getCommandIfMissing(configurationOptions, rawCommand);
+    setCommand(commandToUse);
+		myFixture = new SheetFixture(command,  this);
 	}
 
 	public SheetCommandBase(String configurationOptions,  String rawCommand) throws FileNotFoundException, IOException{
