@@ -20,22 +20,19 @@ public class SheetCommandBase implements SheetCommandInterface {
 	
 	public SheetCommandBase(String configurationOptions,  String rawCommand, String outputFormatOptions) throws FileNotFoundException, IOException{
 		parseConfiguration(configurationOptions);
-		parseConfigurationString(outputFormatOptions);
+		if (outputFormatOptions != null) {
+			parseConfigurationString(outputFormatOptions);
+		}
 		command = getCommandIfMissing(configurationOptions, rawCommand);
 		myFixture = new SheetFixture(command,  this); 
 	}
 
 	public SheetCommandBase(String configurationOptions,  String rawCommand) throws FileNotFoundException, IOException{
-		parseConfiguration(configurationOptions);
-		command = getCommandIfMissing(configurationOptions, rawCommand);
-		myFixture = new SheetFixture(command,  this); 
+		this(configurationOptions, rawCommand, null);
 	}
 	
 	public SheetCommandBase(String configurationOptions) throws FileNotFoundException, IOException{
-		parseConfiguration(configurationOptions);
-		command = getCommandIfMissing(configurationOptions, null);
-		myFixture = new SheetFixture(command,  this); 
-		
+		this(configurationOptions, null);
 	}
 
 
