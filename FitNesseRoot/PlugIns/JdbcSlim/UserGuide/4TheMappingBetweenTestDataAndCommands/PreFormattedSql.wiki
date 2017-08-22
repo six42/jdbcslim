@@ -1,0 +1,58 @@
+---
+Test
+---
+
+When SQL gets more complex it can be easier to maintain in the wiki if it is [[preformatted][.FitNesse.FullReferenceGuide.UserGuide.FitNesseWiki.MarkupLanguageReference.MarkupPreformatted]] instead of in a single line.
+
+!2 Inline
+
+!3 In Properties
+
+We can use preformatted SQL in properties.
+
+|Define Properties|Preformatted                                                        |
+|key              |value                                                               |
+|.include         |!-TestDatabase-!                                                    |
+|cmd              |{{{ select ID from TestData
+ where Name ='%Name%' and City ='%City%' }}}|
+
+!|SQLCommand|Preformatted|
+|Name       |City  |ID?  |
+|James      |London|6    |
+
+!3 In SQLCommand
+
+We can also use preformatted SQL in a SQLCommand table's constructor.
+
+|SQLCommand|Preformatted|{{{ select ID from TestData
+where Name ='%Name%'
+and City ='%City%' }}}|
+|Name      |City        |ID?                                                                |
+|James     |London      |6                                                                  |
+
+!2 Using a variable
+
+But using preformatted SQL inside a table can make wiki pages hard to edit.
+So we can also use [[variables][.FitNesse.FullReferenceGuide.UserGuide.FitNesseWiki.MarkupLanguageReference.MarkupVariables]] to contain the SQL statement.
+Which will leave the wiki's source code much cleaner.
+
+!define SQL { {{{
+select ID
+ from TestData
+ where Name ='%Name%'
+ and City ='%City%'
+}}} }
+
+|Define Properties|Preformatted2   |
+|key              |value           |
+|.include         |!-TestDatabase-!|
+|cmd              |${SQL}          |
+
+!|SQLCommand|Preformatted2|
+|Name       |City  |ID?   |
+|James      |London|6     |
+
+|SQLCommand|Preformatted2|${SQL}|
+|Name      |City         |ID?   |
+|James     |London       |6     |
+

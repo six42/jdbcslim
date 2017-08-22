@@ -29,14 +29,22 @@ It also shows additional methods available to analyse the returned data.
 !1 Using SQLCommand in a scenario
 
 !2 The Scenario with two execute statements
-!|Scenario|TheId               |id   |isNamed|name|andHasPhone|phone|
-|execute  |select Name from TestData where ID = '@id'               |
+
+!note [[Preformatted SQL][<UserGuide.4TheMappingBetweenTestDataAndCommands.PreFormattedSql]] can also be used in a script, to make it easier to edit the wiki page with more complex SQL.
+!define SQL { {{{
+select *
+from TestData
+where ID = '@id'
+}}} }
+
+|Scenario |The Id              |id   |isNamed|name|andHasPhone|phone|
+|execute  |select Name from !-TestData-! where ID = '@id'           |
 |show     |success                                                  |
 |show     |rawResult                                                |
 |show     |resultSheet                                              |
 |check    |getColumnValueByName|NAME |@name                         |
-|#                                                                  |
-|execute  |select * from TestData where ID = '@id'                  |
+|# use preformatted SQL                                             |
+|execute  |${SQL}                                                   |
 |show     |success                                                  |
 |show     |rawResult                                                |
 |show     |resultSheet                                              |

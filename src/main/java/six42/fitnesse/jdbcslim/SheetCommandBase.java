@@ -68,7 +68,7 @@ public class SheetCommandBase implements SheetCommandInterface {
  
 	@Override
 	public void setCommand(String Command){
-		this.command = Command;
+		this.command = HtmlCleaner.cleanupPreFormatted(Command);
 	}
 
 	@Override
