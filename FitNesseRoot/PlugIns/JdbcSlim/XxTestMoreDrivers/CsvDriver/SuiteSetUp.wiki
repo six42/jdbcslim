@@ -9,7 +9,7 @@ LastModifyingUser: six42
 !| define table type|
 |SQLCommand|as Table|
 
-!path ${LibInstallPath}csvjdbc-1.0-18.jar
+!path ${LibInstallPath}csvjdbc-*.jar
 
 !|Define Properties|TestDatabase                  |
 |key               |value                         |
