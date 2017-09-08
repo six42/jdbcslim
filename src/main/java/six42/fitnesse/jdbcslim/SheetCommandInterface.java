@@ -8,8 +8,9 @@ public interface SheetCommandInterface  {
 
 	  public void setCommand(String Command);
  	  public void execute(); 
- 	  public void execute(String Command); 
-	  
+ 	  public void execute(String Command);
+	  public boolean run(String Command);
+
 	  public void reset();
 	  
 
