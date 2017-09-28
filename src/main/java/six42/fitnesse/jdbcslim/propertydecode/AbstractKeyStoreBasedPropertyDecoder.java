@@ -1,4 +1,4 @@
-package six42.fitnesse.jdbcslim;
+package six42.fitnesse.jdbcslim.propertydecode;
 
 import java.io.File;
 

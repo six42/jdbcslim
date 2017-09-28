@@ -1,4 +1,7 @@
-package six42.fitnesse.jdbcslim;
+package six42.fitnesse.jdbcslim.propertydecode;
+
+import six42.fitnesse.jdbcslim.ConfigurationParameters;
+import six42.fitnesse.jdbcslim.PropertiesLoader;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

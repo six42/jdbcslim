@@ -1,6 +1,8 @@
 // Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
 package six42.fitnesse.jdbcslim;
 
+import six42.fitnesse.jdbcslim.propertydecode.PropertyDecoder;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -15,7 +17,7 @@ import java.util.Properties;
 
 public class PropertiesLoader implements PropertiesInterface{
 
-    private final static String defaultDecoderName = "six42.fitnesse.jdbcslim.DbFitDecoder";
+    private final static String defaultDecoderName = "six42.fitnesse.jdbcslim.propertydecode.DbFitDecoder";
     private String propertyDecoderClassName = defaultDecoderName;
     private PropertyDecoder propertyDecoder;
     private DefineProperties theDefinitions = new DefineProperties(null);

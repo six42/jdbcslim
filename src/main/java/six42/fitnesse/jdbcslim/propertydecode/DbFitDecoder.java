@@ -1,4 +1,4 @@
-package six42.fitnesse.jdbcslim;
+package six42.fitnesse.jdbcslim.propertydecode;
 
 import dbfit.util.crypto.CryptoFactories;
 import dbfit.util.crypto.CryptoKeyStore;
