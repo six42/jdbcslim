@@ -1,23 +1,23 @@
 // Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
 package six42.fitnesse.jdbcslim;
 
-import dbfit.util.crypto.CryptoFactories;
-import dbfit.util.crypto.CryptoService;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Properties;
 
 public class PropertiesLoader implements PropertiesInterface{
 
-    private CryptoService crypto = null;
+    private final static String defaultDecoderName = "six42.fitnesse.jdbcslim.DbFitDecoder";
+    private String propertyDecoderClassName = defaultDecoderName;
+    private PropertyDecoder propertyDecoder;
     private DefineProperties theDefinitions = new DefineProperties(null);
 	private final static String encryptedFormPrefix = "ENC("; 
 	private final static String commentTag = "#"; 
@@ -38,8 +38,8 @@ public class PropertiesLoader implements PropertiesInterface{
 	 */
 	private final static String secretTag = commentTag; 
 	
-    public PropertiesLoader(CryptoService cryptoService) {
-        this.crypto = cryptoService;
+    public PropertiesLoader(PropertyDecoder decoder) {
+        this.propertyDecoder = decoder;
     }
 
     public PropertiesLoader() {
@@ -63,9 +63,7 @@ public class PropertiesLoader implements PropertiesInterface{
 	            }
 	            
         }
-        myProperties.putAll(props);
-        setDebugFromProperties();
-        return props;
+        return storeProperties(props);
       }
     
 
@@ -114,9 +112,7 @@ public class PropertiesLoader implements PropertiesInterface{
         	}
         }
 
-        myProperties.putAll(props);
-        setDebugFromProperties();
-        return props;
+        return storeProperties(props);
         /**
          *  Limitations:  If a multi line tag is not closed at the end than the property is 
          *  					dropped without any error
@@ -124,6 +120,29 @@ public class PropertiesLoader implements PropertiesInterface{
          *  		
          *   
          */
+    }
+
+    protected Map<String, String> storeProperties(Map<String, String> props) {
+        if (hasEncryptedValues(props)) {
+            ensureDecoderCreated();
+            props = propertyDecoder.process(props);
+        }
+
+        myProperties.putAll(props);
+        setDebugFromProperties();
+        return props;
+    }
+
+    public static boolean hasEncryptedValues(Map<String, String> props) {
+        boolean hasEncryptedValues = false;
+        Collection<String> values = props.values();
+        for (String value : values) {
+            if (isSecret(value)) {
+                hasEncryptedValues = true;
+                break;
+            }
+        }
+        return hasEncryptedValues;
     }
 
     private boolean checkKeyForCommandAndExecute(String key, String value,
@@ -135,16 +154,17 @@ public class PropertiesLoader implements PropertiesInterface{
 			return true;
 		
 		}
-		if (key.equalsIgnoreCase(".keyStoreLocation")){
-			if (value.equals("")){
-				crypto = null;
-			}else{
-				crypto = CryptoFactories.getCryptoServiceFactory().getCryptoService(CryptoFactories.getCryptoKeyStoreFactory().newInstance(new File(value)));
-        if (isDebug())
-          System.out.println("New Key Store Location " + value);
-			}
-			return true;
-		}
+		if (key.equalsIgnoreCase(".propertyDecoder")) {
+		    if (value.equals("")) {
+                propertyDecoderClassName = defaultDecoderName;
+            } else {
+		        propertyDecoderClassName = value;
+            }
+            if (isDebug()) {
+                System.out.println("New property decoder class " + propertyDecoderClassName);
+            }
+            return true;
+        }
 		return false;
 	}
 
@@ -215,7 +235,7 @@ public class PropertiesLoader implements PropertiesInterface{
      * @return true if wrapped in ENC(text)
      *         false if not ENC(...)
      */
-    private static boolean isSecret(String encValue) {
+    public static boolean isSecret(String encValue) {
         if (encValue == null) {
             return false;
         }
@@ -228,20 +248,35 @@ public class PropertiesLoader implements PropertiesInterface{
     }
     
     public String parseValue(String rawValue) {
-    	String value = rawValue.trim();
-        String encValue = unwrapEncryptedValue(value);
+    	return rawValue.trim();
+    }
 
-        if (encValue == null || crypto == null) {
-            return value;
-        } else {
-          try{
-            String decryptedValue =  crypto.decrypt(encValue);
-            return decryptedValue;
-          }catch (Exception e){
-            throw new RuntimeException("decrypt of " + rawValue + " failed. Wrong Key Store used?", e);
-          }
+    protected void ensureDecoderCreated() {
+        if (propertyDecoder == null) {
+            propertyDecoder = createDecoder(propertyDecoderClassName);
         }
     }
+
+    private PropertyDecoder createDecoder(String className) {
+        try {
+            PropertyDecoder result = null;
+            Class<?> clazz = Class.forName(className);
+            if (PropertyDecoder.class.isAssignableFrom(clazz)) {
+                result = (PropertyDecoder) clazz.newInstance();
+            } else {
+                throw new RuntimeException("Decoder class " + className
+                        + " does not implement " + PropertyDecoder.class.getName());
+            }
+            return result;
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Unable to find decoder class: " + className, e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("Unable to create decoder: " + className, e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException("Error creating decoder: " + className, e);
+        }
+    }
+
     private String parseKey(String rawKey) {
     	return rawKey.trim().toLowerCase();
     }
@@ -306,7 +341,6 @@ public class PropertiesLoader implements PropertiesInterface{
      * Used for Testing only
      * Put all properties (key value) in a Slim table
      * encrypted values are not printed
-     * @param propertiesMap with properties 
      * @return Slim Table with Properties
      */
 	public List<List<String>> toTable() {
