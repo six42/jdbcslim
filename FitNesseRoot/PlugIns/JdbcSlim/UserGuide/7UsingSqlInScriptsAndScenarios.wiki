@@ -1,5 +1,4 @@
 ---
-LastModifyingUser: six42
 Test
 ---
 #Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
@@ -30,12 +29,12 @@ It also shows additional methods available to analyse the returned data.
 
 !2 The Scenario with two execute statements
 
-!note [[Preformatted SQL][<UserGuide.4TheMappingBetweenTestDataAndCommands.PreFormattedSql]] can also be used in a script, to make it easier to edit the wiki page with more complex SQL.
-!define SQL { {{{
+!note [[Readable SQL][<UserGuide.4TheMappingBetweenTestDataAndCommands.ReadableLongCommands]] can also be used in a script, to make it easier to edit the wiki page with more complex SQL.
+!define SQL ( {{{
 select *
 from TestData
 where ID = '@id'
-}}} }
+}}} )
 
 |Scenario |The Id              |id   |isNamed|name|andHasPhone|phone|
 |execute  |select Name from !-TestData-! where ID = '@id'           |
