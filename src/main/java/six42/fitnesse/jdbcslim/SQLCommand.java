@@ -78,11 +78,11 @@ public class SQLCommand extends SheetCommandBase {
 	@Override
 	public void execute() {
 
-		if (Properties().isDebug()) System.out.println("begin execute:"+ success + ":" + command);
+		if (Properties().isDebug()) System.out.println("begin execute:"+ success + ":" + command());
 		
 		if (success) {
 			try{
-				resultSheet = dbExecute(command);
+				resultSheet = dbExecute(command());
 				rawResult = null;
 			} catch (SQLException e) {
 			  System.err.println("Got Exception in SQLCommand dbExecute:" + e.getMessage());
@@ -413,7 +413,7 @@ public class SQLCommand extends SheetCommandBase {
         // TODO Auto-generated catch block
         e1.printStackTrace();
       }
-      System.out.println("Open Connection - autocommit:"+ autoCommit + ":" + ac2 + ":" + command);
+      System.out.println("Open Connection - autocommit:"+ autoCommit + ":" + ac2 + ":" + command());
     }
     try {
       dbConnection.setAutoCommit(autoCommit);

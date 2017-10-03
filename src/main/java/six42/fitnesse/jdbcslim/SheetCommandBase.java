@@ -9,7 +9,7 @@ import java.util.Set;
 
 public class SheetCommandBase implements SheetCommandInterface {
 
-	protected String command = ""; 
+	private String command = "";
 	protected SheetFixture myFixture;
 	protected String rawResult = null;
 	protected List<List<String>> resultSheet;
@@ -20,22 +20,20 @@ public class SheetCommandBase implements SheetCommandInterface {
 	
 	public SheetCommandBase(String configurationOptions,  String rawCommand, String outputFormatOptions) throws FileNotFoundException, IOException{
 		parseConfiguration(configurationOptions);
-		parseConfigurationString(outputFormatOptions);
-		command = getCommandIfMissing(configurationOptions, rawCommand);
-		myFixture = new SheetFixture(command,  this); 
+		if (outputFormatOptions != null) {
+			parseConfigurationString(outputFormatOptions);
+		}
+    String commandToUse = getCommandIfMissing(configurationOptions, rawCommand);
+    setCommand(commandToUse);
+		myFixture = new SheetFixture(command(),  this);
 	}
 
 	public SheetCommandBase(String configurationOptions,  String rawCommand) throws FileNotFoundException, IOException{
-		parseConfiguration(configurationOptions);
-		command = getCommandIfMissing(configurationOptions, rawCommand);
-		myFixture = new SheetFixture(command,  this); 
+		this(configurationOptions, rawCommand, null);
 	}
 	
 	public SheetCommandBase(String configurationOptions) throws FileNotFoundException, IOException{
-		parseConfiguration(configurationOptions);
-		command = getCommandIfMissing(configurationOptions, null);
-		myFixture = new SheetFixture(command,  this); 
-		
+		this(configurationOptions, null);
 	}
 
 
@@ -70,7 +68,7 @@ public class SheetCommandBase implements SheetCommandInterface {
  
 	@Override
 	public void setCommand(String Command){
-		this.command = Command;
+		this.command = HtmlCleaner.cleanupPreFormatted(Command);
 	}
 
 	@Override
