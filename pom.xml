@@ -67,6 +67,19 @@
             <scope>test</scope>
         </dependency>
 
+         <dependency>
+             <groupId>com.h2database</groupId>
+             <artifactId>h2</artifactId>
+             <version>RELEASE</version>
+             <scope>test</scope>
+         </dependency>
+         <dependency>
+             <groupId>net.sourceforge.csvjdbc</groupId>
+             <artifactId>csvjdbc</artifactId>
+             <version>RELEASE</version>
+             <scope>test</scope>
+         </dependency>
+
         <!-- Project specific: This is required to support encryption. -->
         <!-- https://mvnrepository.com/artifact/com.github.dbfit/dbfit -->
         <dependency>
@@ -198,6 +211,41 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.20</version>
+                <configuration>
+                    <excludes>
+                        <!-- this test actually runs fitnesse tests
+                             therefore it will only be executed for
+                             integration-test goal
+                        -->
+                        <exclude>**/JdbcSlimAcceptanceTest.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.20</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- this test actually runs fitnesse tests-->
+                    <test>JdbcSlimAcceptanceTest</test>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.surefire</groupId>
+                        <artifactId>surefire-junit47</artifactId>
+                        <version>2.20</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
