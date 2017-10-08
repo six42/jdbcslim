@@ -3,7 +3,9 @@ package six42.fitnesse.jdbcslim;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -159,14 +161,49 @@ public class SheetCommandBase implements SheetCommandInterface {
 		return this.resultSheet.get(1)
 				.get(column);
 	}
-	public String getColumnValueByName( String columnName){
+	public String getColumnValueByName(String columnName){
+		return getColumnValueByNameFromRow(columnName, 1);
+	}
+
+	public String getColumnValueByNameFromRow(String columnName, int row){
+		List<String> Data = getRowValues(row);
 		List<String> Header = this.resultSheet.get(0);
-		List<String> Data = this.resultSheet.get(1);
-		
+
 		for (int i =0; i< Header.size(); i++ ){
 			if (HeaderLine.isHeaderNameEqual(Header.get(i),columnName) ) return Data.get(i);
 		}
-		throw new RuntimeException("Column not found   (" + columnName + ")." ); 
+		throw new RuntimeException("Column not found   (" + columnName + ")." );
+	}
+
+	public int getRowCount() {
+		List<List<String>> sheet = this.resultSheet;
+		return sheet == null || sheet.isEmpty() ? 0 : sheet.size() - 1;
+	}
+
+	public List<String> getRowValues(int row) {
+		validateRowIndex(row);
+		return this.resultSheet.get(row);
+	}
+
+	public Map<String, String> getRow(int row) {
+		Map<String, String> result = new LinkedHashMap<String, String>();
+		validateRowIndex(row);
+		List<List<String>> sheet = resultSheet();
+		List<String> headers = sheet.get(0);
+		List<String> values = sheet.get(row);
+		for (int i = 0; i < headers.size(); i++) {
+			String header = headers.get(i);
+			String value = values.get(i);
+			result.put(header, value);
+		}
+		return result;
+	}
+
+	private void validateRowIndex(int row) {
+		int rowCount = getRowCount();
+		if (rowCount < row) {
+			throw new RuntimeException("No row: " + row +". Rowcount was: " + rowCount);
+		}
 	}
 
 	public void ResetConfiguration(String configurationOptions) throws FileNotFoundException, IOException {
