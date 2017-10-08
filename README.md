@@ -47,6 +47,7 @@ JdbcSlim testpages available on .Plugins.JdbcSlim.UserGuide (http://localhost:80
 Once all tests pass execute `ant build` to validate that the acceptance test pass from the command line.
 
 ### Installation.Maven
+Note: Maven is not the strategic build tool and new versions are not tested against it.
 
 Execute `mvn clean compile dependency:copy-dependencies package` to copy dependencies and build `jdbcslim.jar` in the folder `plugins/jdbcslim`.
 
