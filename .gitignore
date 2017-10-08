@@ -52,3 +52,6 @@ FitNesseRoot/RecentChanges.wiki
 
 # IDE files
 /.idea/
+
+# Target dir
+target/

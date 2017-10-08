@@ -16,8 +16,8 @@ LastModifyingUser: six42
 !define TEST_SYSTEM {slim}
 
 !path ${TestLibInstallPath}${JdbcSlimLib}
-!path ${TestLibInstallPath}h2-1.4.195.jar
-!path ${TestLibInstallPath}dbfit-core-3.2.0.jar
+!path ${TestLibInstallPath}h2-*.jar
+!path ${TestLibInstallPath}dbfit-*.jar
 
 
 |import                 |
