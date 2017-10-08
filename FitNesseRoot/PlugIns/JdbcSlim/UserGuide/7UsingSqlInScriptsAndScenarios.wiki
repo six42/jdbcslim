@@ -25,6 +25,17 @@ It also shows additional methods available to analyse the returned data.
 |$RSOne=|resultSheet                |
 |closeConnection                    |
 
+!1 Calling the SQLCommand directly in a Script (simplified syntax)
+When just executing a single SQL statement (or when connection re-use is enabled) one can ommit the the 'openConnection' and 'closeConnection' commands.
+The 'run' command will turn red if the query failes (similar to a call to 'success' after 'execute')
+
+!|Script|SQLCommand          |ScriptDefinition|
+|run    |select * from TestData               |
+|show   |getColumnValueByName|NAME            |
+|show   |rawResult                            |
+|show   |resultSheet                          |
+|$RSOne=|resultSheet                          |
+
 !1 Using SQLCommand in a scenario
 
 !2 The Scenario with two execute statements

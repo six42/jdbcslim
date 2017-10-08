@@ -87,6 +87,19 @@ public class SheetCommandBase implements SheetCommandInterface {
 	}
 
 	@Override
+	public boolean run(String Command) {
+		beginTable();
+		boolean result = false;
+		try {
+			execute(Command);
+			result = success();
+		} finally {
+			endTable();
+		}
+		return result;
+	}
+
+	@Override
 	public void reset() {
 		// Nothing to be done
 
