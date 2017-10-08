@@ -74,6 +74,7 @@
             <groupId>com.github.dbfit</groupId>
             <artifactId>dbfit</artifactId>
             <version>3.2.0</version>
+            <optional>true</optional>
             <!-- A long list of exclusions, we don't need all the libraries coming with dbfit. -->
             <exclusions>
                 <exclusion>
