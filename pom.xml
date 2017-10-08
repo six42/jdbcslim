@@ -153,6 +153,14 @@
                     <groupId>org.eclipse.jgit</groupId>
                     <artifactId>org.eclipse.jgit</artifactId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>hsqldb</artifactId>
+                    <groupId>org.hsqldb</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>fitnesse</artifactId>
+                    <groupId>org.fitnesse</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
