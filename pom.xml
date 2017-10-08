@@ -311,7 +311,7 @@
                     </execution>
 
                     <execution>
-                        <phase>install</phase>
+                        <phase>prepare-package</phase>
                         <goals>
                             <goal>copy-dependencies</goal>
                         </goals>
