@@ -189,16 +189,6 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <!-- On clean throw away old screenshots, pagesources and downloads -->
-                            <directory>FitNesseRoot/files/</directory>
-                            <followSymlinks>false</followSymlinks>
-                            <includes>
-                                <include>screenshots/**</include>
-                                <include>pagesources/**</include>
-                                <include>downloads/**</include>
-                            </includes>
-                        </fileset>
-                        <fileset>
                             <directory>plugins/jdbcslim</directory>
                             <includes>
                                 <include>**/*.jar</include>
