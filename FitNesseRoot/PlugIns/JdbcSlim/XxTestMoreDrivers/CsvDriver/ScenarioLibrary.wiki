@@ -16,8 +16,8 @@ Suites
 !define TEST_SYSTEM {slim}
 
 !path ${TestLibInstallPath}${JdbcSlimLib}
-!path ${TestLibInstallPath}csvjdbc-1.0-18.jar
-!path ${TestLibInstallPath}dbfit-core-3.2.0.jar
+!path ${TestLibInstallPath}csvjdbc-*.jar
+!path ${TestLibInstallPath}dbfit-*.jar
 
 
 |import                 |

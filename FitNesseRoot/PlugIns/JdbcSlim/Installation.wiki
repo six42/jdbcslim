@@ -9,7 +9,7 @@ LastModifyingUser: six42
 !2  Installation Path 
 Adujust the below path if you installed at a different location
 This path is relative to the folder in which FitNesse got started 
-!define LibInstallPath {plugins/jdbcslim/}
+!define LibInstallPath {${RootPath}/plugins/jdbcslim/}
 
 The Jdbc Slim Library - always required
 !path ${LibInstallPath}${JdbcSlimLib}
@@ -17,12 +17,12 @@ The Jdbc Slim Library - always required
 !2 Further dependencies
 This is required to support encryption. It can be downloaded from https://github.com/dbfit/dbfit/releases/tag/v3.2.0
 !path ${LibInstallPath}commons-codec-1.10.jar
-!path ${LibInstallPath}dbfit-core-3.2.0.jar
+!path ${LibInstallPath}dbfit-*.jar
 
 See the SuiteSetup pages for driver specific setup. 
 JDBC driver used for the samples. Not required if you use a different JDBC driver
-${LibInstallPath}h2-1.4.195.jar - download from http://www.h2database.com/html/download.html
-${LibInstallPath}csvjdbc-1.0-18.jar
+${LibInstallPath}h2-*.jar - download from http://www.h2database.com/html/download.html
+${LibInstallPath}csvjdbc-*.jar
 
 !2 User Manual  and Test Suite
 To access the user manual and run the examples copy all Jdbc Slim Fitnesse pages from github to !-FitNesseRoot\PlugIns-!

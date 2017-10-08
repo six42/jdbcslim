@@ -20,9 +20,9 @@
     <path id="jdbcslim-classpath">
 		<fileset dir="${dist.dir}">
 			<include name="commons-codec-1.10.jar"/>
-			<include name="csvjdbc-1.0-18.jar"/>
+			<include name="csvjdbc-*.jar"/>
 			<include name="fitnesse-standalone.jar"/>
-			<include name="dbfit-core-3.2.0.jar"/>
+			<include name="dbfit-*.jar"/>
 			<include name="junit-4.12.jar"/>
 		</fileset>
 	</path>

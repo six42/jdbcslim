@@ -12,7 +12,7 @@ LastModifyingUser: six42
 
 *!
 !*> Driver specific setup 
-!path ${LibInstallPath}h2-1.4.195.jar
+!path ${LibInstallPath}h2-*.jar
 
 !|Define Properties|TestDatabase                      |
 |key               |value                             |
