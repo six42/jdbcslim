@@ -11,14 +11,13 @@
     <name>Six42 jdbcSlim FitNesse Fixtures</name>
     <description>JdbcSlim is a Slim framework for FitNesse to access and test data via jdbc driver.</description>
 
-    <!--<licenses>-->
-    <!--<license>-->
-    <!--<name> </name>-->
-    <!--<url> </url>-->
-    <!--<distribution> </distribution>-->
-    <!--<comments> </comments>-->
-    <!--</license>-->
-    <!--</licenses>-->
+    <licenses>
+        <license>
+            <name>Mozilla Public License Version 2.0</name>
+            <url>http://www.mozilla.org/MPL/2.0/index.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
     <!--<developers>-->
     <!--<developer>-->
