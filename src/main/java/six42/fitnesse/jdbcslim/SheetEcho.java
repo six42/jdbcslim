@@ -48,6 +48,19 @@ public class SheetEcho implements SheetCommandInterface {
 	}
 
 	@Override
+	public boolean run(String Command) {
+		boolean result = false;
+		beginTable();
+		try {
+			execute(Command);
+			result = success();
+		} finally {
+			endTable();
+		}
+		return result;
+	}
+
+	@Override
 	public void reset() {
 		// TODO Auto-generated method stub
 
