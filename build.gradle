@@ -1,0 +1,200 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+group 'com.github.six42'
+version = '1.2.0'
+//version = new Date().format('yyyyMMdd')
+
+println "Building ${project.name} v${project.version}..."
+
+repositories {
+  mavenCentral()
+}
+
+configurations {
+  optional
+  compile {
+    transitive = false
+    extendsFrom optional
+  }
+  runtime {
+    transitive = false
+  }
+  testRuntime {
+    transitive = false
+  }
+}
+
+sourceCompatibility = '1.7'
+targetCompatibility = '1.7'
+
+dependencies {
+  //compile fileTree (dir: 'plugins/jdbcslim', include: '*.jar')
+  compile "commons-codec:commons-codec:1.10"
+  compile "org.fitnesse:fitnesse:20161106:standalone"
+  compileOnly "com.github.dbfit:dbfit:3.2.0"
+  testRuntime "com.github.dbfit:dbfit:3.2.0"
+  testRuntime "net.sourceforge.csvjdbc:csvjdbc:1.0.34"
+  testRuntime "com.h2database:h2:1.4.196"
+
+
+//  testCompile "junit:junit:4.12"
+}
+
+task listJars << {
+	println "configurations.compile"
+    configurations.compile.each { File file -> println " ${file.name}, ${file.path}" }
+	println "configurations.runtime"
+    configurations.runtime.each { File file -> println " ${file.name}, ${file.path}" }
+	println "sourceSets.main.runtimeClasspath"
+    sourceSets.main.runtimeClasspath.each { File file -> println " ${file.name}, ${file.path}" }
+
+	}
+
+task fitNesseVersion {
+  def versionFile = new File("${sourceSets.main.output.resourcesDir}/META-INF/Version.txt")
+  versionFile.parentFile.mkdirs()
+  versionFile.text="v${version}"
+}
+
+
+
+processResources.dependsOn "fitNesseVersion"  
+
+task copyRuntimeLibs(type: Copy) {
+  dependsOn jar
+  into "plugins/jdbcslim"
+  from configurations.testRuntime
+  from jar.archivePath
+  from "test/main/resources"
+}
+
+test {
+  dependsOn copyRuntimeLibs
+  maxParallelForks 1
+}
+
+
+task run(type: JavaExec) {
+  dependsOn copyRuntimeLibs
+  classpath = configurations.runtime
+  main "fitnesseMain.FitNesseMain"
+  args "-p", "8001"
+}
+
+jar {
+  into('Resources/FitNesseRoot/Plugins/JdbcSlim') {
+    from('FitNesseRoot/Plugins/JdbcSlim') {
+      include '**/*.wiki'
+    }
+  }
+  into('Resources/FitNesseRoot/Plugins/') {
+    from('FitNesseRoot/Plugins') {
+      include 'JdbcSlim.wiki'
+	}
+  }
+  manifest {
+    attributes("Implementation-Version": version)
+  }
+}
+
+
+task acceptanceTest(type: JavaExec) {
+  mustRunAfter test
+  dependsOn copyRuntimeLibs
+  classpath = configurations.testRuntime
+  main "fitnesseMain.FitNesseMain"
+  args "-o", "-c", "PlugIns.JdbcSlim.UserGuide?suite&format=text"
+}
+
+task singleTest(type: JavaExec) {
+  dependsOn copyRuntimeLibs
+  classpath = configurations.testRuntime
+  main "fitnesseMain.FitNesseMain"
+  args "-o", "-c", "PlugIns.JdbcSlim.UserGuide?suite&format=text"
+}
+
+check.dependsOn acceptanceTest
+
+task javadocJar(type: Jar) {
+  mustRunAfter check
+  classifier = 'javadoc'
+  from javadoc
+}
+
+task sourcesJar(type: Jar) {
+  mustRunAfter check
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+
+build.dependsOn javadocJar
+build.dependsOn sourcesJar
+
+//uploadArchives.dependsOn build
+
+
+clean{
+  delete "plugins/jdbcslim"
+}
+
+
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      pom.project {
+        name 'jdbcslim'
+        artifactId 'jdbcslim'
+        packaging 'jar'
+        description 'JdbcSlim is a Slim framework for FitNesse to access and test data via jdbc driver.'
+        url 'http://github.com/six42/jdbcslim'
+
+        scm {
+    connection 'scm:git:git://github.com/six42/jdbcslim.git'
+    developerConnection 'scm:git:git@github.com:six42/jdbcslim.git'
+    url 'scm:git:http://github.com/six42/jdbcslim'
+        }
+
+        licenses {
+          license {
+      name 'Mozilla Public License 2.0'
+      url 'https://choosealicense.com/licenses/mpl-2.0/'
+          }
+        }
+
+        developers {
+          developer {
+			id 'six42'
+			name 'Six42'
+			email 'six42@gmx.net'
+          }
+        }
+      }
+    }
+  }
+}
+
+wrapper {
+  gradleVersion = '2.13'
+}
