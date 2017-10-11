@@ -31,7 +31,7 @@ import fitnesse.http.SimpleResponse;
  * <p>Enable this plugin by editing plugins.properties and adding the line:</p>
  * <pre>
  * Authenticator = six42.fitnesse.jdbcslim.jdbcAuthenticator
- * jdbcAuthenticator.properties = <file name with database properties>
+ * jdbcAuthenticator.properties = <i>file name with database properties</i>
  * </pre>
 */
 

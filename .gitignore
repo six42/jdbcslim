@@ -55,3 +55,6 @@ FitNesseRoot/RecentChanges.wiki
 
 # Target dir
 target/
+
+build/
+.gradle/
