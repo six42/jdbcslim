@@ -67,7 +67,7 @@ task copyRuntimeLibs(type: Copy) {
   into "plugins/jdbcslim"
   from configurations.testRuntime
   from jar.archivePath
-  from "test/main/resources"
+  from "src/test/resources"
 }
 
 test {
