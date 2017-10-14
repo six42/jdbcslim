@@ -1,9 +1,10 @@
 apply plugin: 'java'
+apply plugin: "jacoco"
 apply plugin: 'maven'
 apply plugin: 'signing'
 
 group 'com.github.six42'
-version = '1.2.0'
+version = '1.2.1'
 //version = new Date().format('yyyyMMdd')
 
 println "Building ${project.name} v${project.version}..."
@@ -13,10 +14,8 @@ repositories {
 }
 
 configurations {
-  optional
   compile {
     transitive = false
-    extendsFrom optional
   }
   runtime {
     transitive = false
@@ -26,13 +25,13 @@ configurations {
   }
 }
 
+
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
 
 dependencies {
-  //compile fileTree (dir: 'plugins/jdbcslim', include: '*.jar')
-  compile "commons-codec:commons-codec:1.10"
   compile "org.fitnesse:fitnesse:20161106:standalone"
+  compile "commons-codec:commons-codec:1.10"
   compileOnly "com.github.dbfit:dbfit:3.2.0"
   testRuntime "com.github.dbfit:dbfit:3.2.0"
   testRuntime "net.sourceforge.csvjdbc:csvjdbc:1.0.34"
@@ -41,16 +40,6 @@ dependencies {
 
 //  testCompile "junit:junit:4.12"
 }
-
-task listJars << {
-	println "configurations.compile"
-    configurations.compile.each { File file -> println " ${file.name}, ${file.path}" }
-	println "configurations.runtime"
-    configurations.runtime.each { File file -> println " ${file.name}, ${file.path}" }
-	println "sourceSets.main.runtimeClasspath"
-    sourceSets.main.runtimeClasspath.each { File file -> println " ${file.name}, ${file.path}" }
-
-	}
 
 task fitNesseVersion {
   def versionFile = new File("${sourceSets.main.output.resourcesDir}/META-INF/Version.txt")
@@ -100,15 +89,40 @@ jar {
 }
 
 
-task acceptanceTest(type: JavaExec) {
-  mustRunAfter test
-  dependsOn copyRuntimeLibs
-  classpath = configurations.testRuntime
+
+jacoco {
+    toolVersion = "0.7.6.201602180812"
+ }
+
+
+task coverageTest(type: JavaExec) {
+  dependsOn copyRuntimeLibs, jar
+  systemProperty "file.encoding", "utf-8"
+  classpath = sourceSets.main.output
+  classpath += configurations.testRuntime
+  
   main "fitnesseMain.FitNesseMain"
-  args "-o", "-c", "PlugIns.JdbcSlim.UserGuide?suite&format=text"
+  args "-o", "-c", "PlugIns.JdbcSlim.UserGuide?suite&format=text&debug"
 }
 
-task singleTest(type: JavaExec) {
+
+jacoco {
+    applyTo coverageTest
+}
+coverageTest{
+  jacoco{
+ 	append = false
+  }
+}
+
+task coverageTestReport(type:JacocoReport){
+	dependsOn coverageTest
+    executionData coverageTest
+    sourceSets sourceSets.main
+}
+
+
+task acceptanceTest(type: JavaExec) {
   dependsOn copyRuntimeLibs
   classpath = configurations.testRuntime
   main "fitnesseMain.FitNesseMain"
@@ -116,6 +130,7 @@ task singleTest(type: JavaExec) {
 }
 
 check.dependsOn acceptanceTest
+
 
 task javadocJar(type: Jar) {
   mustRunAfter check
@@ -129,6 +144,19 @@ task sourcesJar(type: Jar) {
   from sourceSets.main.allSource
 }
 
+
+build.dependsOn javadocJar
+build.dependsOn sourcesJar
+
+clean{
+  delete "plugins/jdbcslim"
+}
+
+
+/////////////////////////////////////////
+// Below is required for publishing
+/////////////////////////////////////////
+
 artifacts {
     archives javadocJar, sourcesJar
 }
@@ -137,18 +165,7 @@ signing {
     sign configurations.archives
 }
 
-
-build.dependsOn javadocJar
-build.dependsOn sourcesJar
-
-//uploadArchives.dependsOn build
-
-
-clean{
-  delete "plugins/jdbcslim"
-}
-
-
+uploadArchives.dependsOn build
 
 uploadArchives {
   repositories {
