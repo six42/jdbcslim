@@ -9,6 +9,7 @@ version = '1.2.0'
 println "Building ${project.name} v${project.version}..."
 
 repositories {
+  mavenLocal()
   mavenCentral()
 }
 
@@ -34,12 +35,12 @@ dependencies {
   compile "commons-codec:commons-codec:1.10"
   compile "org.fitnesse:fitnesse:20161106:standalone"
   compileOnly "com.github.dbfit:dbfit:3.2.0"
+
+  testCompile 'org.hamcrest:hamcrest-core:1.3'
+  testCompile 'junit:junit:4.12'
   testRuntime "com.github.dbfit:dbfit:3.2.0"
   testRuntime "net.sourceforge.csvjdbc:csvjdbc:1.0.34"
   testRuntime "com.h2database:h2:1.4.196"
-
-
-//  testCompile "junit:junit:4.12"
 }
 
 task listJars << {
@@ -68,6 +69,7 @@ task copyRuntimeLibs(type: Copy) {
   from configurations.testRuntime
   from jar.archivePath
   from "src/test/resources"
+  exclude 'junit*.jar', 'hamcrest*.jar'
 }
 
 test {
@@ -100,22 +102,12 @@ jar {
 }
 
 
-task acceptanceTest(type: JavaExec) {
-  mustRunAfter test
-  dependsOn copyRuntimeLibs
-  classpath = configurations.testRuntime
-  main "fitnesseMain.FitNesseMain"
-  args "-o", "-c", "PlugIns.JdbcSlim.UserGuide?suite&format=text"
-}
-
 task singleTest(type: JavaExec) {
   dependsOn copyRuntimeLibs
   classpath = configurations.testRuntime
   main "fitnesseMain.FitNesseMain"
   args "-o", "-c", "PlugIns.JdbcSlim.UserGuide?suite&format=text"
 }
-
-check.dependsOn acceptanceTest
 
 task javadocJar(type: Jar) {
   mustRunAfter check
