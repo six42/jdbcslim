@@ -1,7 +1,7 @@
 #Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
 #
 !2 Download the latest Jdbc Slim library from github.com/six42/jdbcslim
-!define JdbcSlimLib {jdbcslim-*.jar}
+!define JdbcSlimLib {jdbcslim*.jar}
 
 !2  Installation Path 
 Adujust the below path if you installed at a different location
