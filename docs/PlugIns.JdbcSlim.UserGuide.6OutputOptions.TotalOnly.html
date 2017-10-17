@@ -1,0 +1,77 @@
+<html><head><title>PlugIns.JdbcSlim.UserGuide.6OutputOptions.TotalOnly</title><meta http-equiv='Content-Type' content='text/html;charset=UTF-8'/><link rel='stylesheet' type='text/css' href='css/fitnesse.css'/><script src='javascript/jquery-1.11.3.min.js' type='text/javascript'></script><script src='javascript/fitnesse.js' type='text/javascript'></script></head><body><header><h2>PlugIns.JdbcSlim.UserGuide.6OutputOptions.TotalOnly</h2></header><article><h2><a href="PlugIns.html">PlugIns</a>
+<a href="PlugIns.JdbcSlim.html">JdbcSlim</a>
+<a href="PlugIns.JdbcSlim.UserGuide.html">UserGuide</a>
+<a href="PlugIns.JdbcSlim.UserGuide.6OutputOptions.html">6OutputOptions</a>
+</h2></br><br/><br/>If you just want to see the row count of the recordset set the flag <b>dbOnlyRowCount</b> to the name of the column which should show the row count.<br/>In this case you might want to measure performance. To do so set also one or all of the following:<br/><b>dbPerf</b> - Total processing time in seconds<br/><b>dbPerfRetrieval</b> - Time to get all rows and columns from the recordset from the database server into the application server <br/><b>dbPerfExecution</b> - Time to execute the statement on the database server  <br/><br/><table>
+	<tr>
+		<td>SQLCommand</td>
+		<td>TestDatabase</td>
+		<td>select d1.*, d2.*, d3.*, d4.*, d5.*
+from TestData d1 join TestData d2 join TestData d3 join TestData d4 join TestData d5 </td>
+		<td>dbOnlyRowCount=RowCount dbPerf=ProcessingTime dbPerfRetrieval=RetrievalTime dbPerfExecution=ExecutionTime</td>
+	</tr>
+	<tr>
+		<td>RowCount?</td>
+		<td>ProcessingTime?</td>
+		<td>RetrievalTime?</td>
+		<td>ExecutionTime?</td>
+	</tr>
+	<tr>
+		<td>32768</td>
+		<td>&lt;1</td>
+		<td>&lt;1</td>
+		<td>&lt;1</td>
+	</tr>
+</table>
+<br/><br/><br/><table>
+	<tr>
+		<td>SQLCommand</td>
+		<td>TestDatabase</td>
+		<td>%SQL%</td>
+		<td colspan="2">dbOnlyRowCount=RowCount 
+dbPerf=ProcessingTime 
+dbPerfRetrieval=RetrievalTime 
+dbPerfExecution=ExecutionTime</td>
+	</tr>
+	<tr>
+		<td>SQL</td>
+		<td>RowCount?</td>
+		<td>ProcessingTime?</td>
+		<td>RetrievalTime?</td>
+		<td>ExecutionTime?</td>
+	</tr>
+	<tr>
+		<td>select d1.*, d2.*, d3.*
+from TestData d1 
+join TestData d2 
+join TestData d3 </td>
+		<td>512</td>
+		<td>&lt;1</td>
+		<td>&lt;1</td>
+		<td>&lt;1</td>
+	</tr>
+	<tr>
+		<td>select d1.*, d2.*, d3.*, d4.*
+from TestData d1 
+join TestData d2 
+join TestData d3 
+join TestData d4 </td>
+		<td>4096</td>
+		<td>&lt;1</td>
+		<td>&lt;1</td>
+		<td>&lt;1</td>
+	</tr>
+	<tr>
+		<td>select d1.*, d2.*, d3.*, d4.*, d5.*
+from TestData d1 
+join TestData d2 
+join TestData d3 
+join TestData d4 
+join TestData d5 </td>
+		<td>32768</td>
+		<td>&lt;5</td>
+		<td>&lt;5</td>
+		<td>&lt;5</td>
+	</tr>
+</table>
+</article></body></html>
