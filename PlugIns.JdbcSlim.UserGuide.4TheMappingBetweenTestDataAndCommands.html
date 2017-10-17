@@ -1,0 +1,102 @@
+<html><head><title>PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands</title><meta http-equiv='Content-Type' content='text/html;charset=UTF-8'/><link rel='stylesheet' type='text/css' href='css/fitnesse.css'/><script src='javascript/jquery-1.11.3.min.js' type='text/javascript'></script><script src='javascript/fitnesse.js' type='text/javascript'></script></head><body><header><h2>PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands</h2></header><article><h2><a href="PlugIns.html">PlugIns</a>
+<a href="PlugIns.JdbcSlim.html">JdbcSlim</a>
+<a href="PlugIns.JdbcSlim.UserGuide.html">UserGuide</a>
+</h2></br><br/>The Header line of each SQL Command Table contains input and output columns.<br/>Like in a <a href="FitNesse.UserGuide.WritingAcceptanceTests.SliM.DecisionTable.html">DecisionTable</a> output columns are marked with a question mark.<br/>All columns without a question mark are input columns.<br/><br/>If the table has one ore more input columns the SQL command is executed <b>once for each line</b> in the table and the command must return <b>exactly one</b> result row. <br/><br/>Before each execution a string replacement happens. Any occurrence of a column name between percent signs is replaced with the actual value of the column.<br/> <br/> <br/>Lets take an example. <br/><br/><table>
+	<tr>
+		<td>SQLCommand</td>
+		<td>TestDatabase</td>
+		<td>select City from TestData where ID ='%ID%'</td>
+	</tr>
+	<tr>
+		<td>ID</td>
+		<td colspan="2">CITY?</td>
+	</tr>
+	<tr>
+		<td>2</td>
+		<td colspan="2">Denver</td>
+	</tr>
+	<tr>
+		<td>5</td>
+		<td colspan="2">Paris</td>
+	</tr>
+</table>
+<br/>The above table has one input column ID and one output column CITY.<br/>For the first line the code: <i>select City from TestData<a title="create page" href="PlugIns.JdbcSlim.UserGuide.TestData?edit&amp;nonExistent=true.html">[?]</a> where ID ='2' </i> will be executed and in the result set a column CITY is expected and the value is compared to 'Denver'<br/>For the first line the code: <i>select City from TestData<a title="create page" href="PlugIns.JdbcSlim.UserGuide.TestData?edit&amp;nonExistent=true.html">[?]</a> where ID ='5' </i> will be executed and in the result set a column CITY is expected and the value is compared to 'Paris'<br/><br/>If the table has no input columns the SQL command is executed only once. <br/>The result set can have more than one row and is compared against all rows in the table.<br/><br/><table>
+	<tr>
+		<td>SQLCommand</td>
+		<td>TestDatabase</td>
+		<td>select ID, City from TestData where ID in ('2','5')</td>
+	</tr>
+	<tr>
+		<td>ID?</td>
+		<td colspan="2">CITY?</td>
+	</tr>
+	<tr>
+		<td>2</td>
+		<td colspan="2">Denver</td>
+	</tr>
+	<tr>
+		<td>5</td>
+		<td colspan="2">Paris</td>
+	</tr>
+</table>
+<br/>Further Reading:<br/><div class="contents">
+	<b>Contents:</b>
+	<ul class="toc1">
+		<li>
+			<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.DefaultInputValues.html" class="test">Default Input Values +</a>
+		</li>
+		<li>
+			<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.EmptyExpectedCellsAreMarkedAsIgnored.html" class="test">Empty Expected Cells Are Marked As Ignored +</a>
+		</li>
+		<li>
+			<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.InsertUpdateDelete.html" class="test">Insert Update Delete +</a>
+			<ul class="toc2">
+				<li>
+					<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.InsertUpdateDelete.CommandChain.html" class="test pruned">Command Chain +-</a>
+				</li>
+				<li>
+					<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.InsertUpdateDelete.SelectUpdateSelect.html" class="test pruned">Select Update Select +-</a>
+					<span class="pageHelp">: Not working with H2 maybe other jdbcDriver support this</span>
+				</li>
+			</ul>
+		</li>
+		<li>
+			<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.ReadableLongCommands.html" class="suite">Readable Long Commands *</a>
+			<ul class="toc2">
+				<li>
+					<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.ReadableLongCommands.LiteralMarkup.html" class="test">Literal Markup +</a>
+				</li>
+				<li>
+					<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.ReadableLongCommands.PreFormattedSql.html" class="test">Pre Formatted Sql +</a>
+				</li>
+			</ul>
+		</li>
+		<li>
+			<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.ReplacerStringCanBeAnyName.html" class="test">Replacer String Can Be Any Name +</a>
+		</li>
+		<li>
+			<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.ResultComparatorsCanBeUsed.html" class="test">Result Comparators Can Be Used +</a>
+		</li>
+		<li>
+			<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.StoredProcedures.html" class="test">Stored Procedures +</a>
+			<ul class="toc2">
+				<li>
+					<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.StoredProcedures.WithInputParamters.html" class="test">With Input Paramters +</a>
+				</li>
+				<li>
+					<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.StoredProcedures.WithOutputParameters.html" class="test pruned">With Output Parameters +-</a>
+				</li>
+				<li>
+					<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.StoredProcedures.WithParameterDefinitionsInline.html" class="test">With Parameter Definitions Inline +</a>
+				</li>
+				<li>
+					<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.StoredProcedures.WithRecordSetAsOutput.html" class="test">With Record Set As Output +</a>
+				</li>
+			</ul>
+		</li>
+		<li>
+			<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.UnusedInputColumnsAreFlagged.html" class="test">Unused Input Columns Are Flagged +</a>
+		</li>
+	</ul>
+</div>
+<br/><br/>  <br/></article></body></html>

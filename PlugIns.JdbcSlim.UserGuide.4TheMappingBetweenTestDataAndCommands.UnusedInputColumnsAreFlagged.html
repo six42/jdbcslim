@@ -1,0 +1,141 @@
+<html><head><title>PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.UnusedInputColumnsAreFlagged</title><meta http-equiv='Content-Type' content='text/html;charset=UTF-8'/><link rel='stylesheet' type='text/css' href='css/fitnesse.css'/><script src='javascript/jquery-1.11.3.min.js' type='text/javascript'></script><script src='javascript/fitnesse.js' type='text/javascript'></script></head><body><header><h2>PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.UnusedInputColumnsAreFlagged</h2></header><article><h2><a href="PlugIns.html">PlugIns</a>
+<a href="PlugIns.JdbcSlim.html">JdbcSlim</a>
+<a href="PlugIns.JdbcSlim.UserGuide.html">UserGuide</a>
+<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.html">4TheMappingBetweenTestDataAndCommands</a>
+</h2></br><br/>Unused Input column names like [AGE] below are flagged as fail.<br/>In such a case either<br/><ul>
+	<li>the command should be adjusted or</li>
+	<li>the column should be removed.</li>
+	<li>To avoid that the input columns are flagged red  add the flag <b>outputFlagUnusedInputColumns=false</b></li>
+</ul>
+<br/><div class="collapsible closed"><ul><li><a href='#' class='expandall'>Expand</a></li><li><a href='#' class='collapseall'>Collapse</a></li></ul>
+	<p class="title">Included page: <a href="FitNesse.SuiteAcceptanceTests.SuiteSlimTests.SetUp.html">.FitNesse.SuiteAcceptanceTests.SuiteSlimTests.SetUp</a> <a href="FitNesse.SuiteAcceptanceTests.SuiteSlimTests.SetUp?edit&amp;redirectToReferer=true&amp;redirectAction=.html" class="edit"></a></p>
+	<div><table>
+	<tr>
+		<td>Import</td>
+	</tr>
+	<tr>
+		<td>fitnesse.fixtures</td>
+	</tr>
+</table>
+<br/><table>
+	<tr>
+		<td>SetUp</td>
+		<td>Plugins=fitnesse.testsystems.slim.CustomTableAliasPlugin
+CustomComparators=glob:fitnesse.testsystems.slim.GlobComparator</td>
+	</tr>
+</table>
+<br/><table>
+	<tr>
+		<td>Library</td>
+	</tr>
+	<tr>
+		<td>page driver</td>
+	</tr>
+	<tr>
+		<td>echo fixture</td>
+	</tr>
+</table>
+</div>
+</div>
+<br/><span class="meta">variable defined: TestPageName=TestPage</span>
+<br/><br/><table>
+	<tr>
+		<td colspan="9">script</td>
+	</tr>
+	<tr>
+		<td>given Jdbc Slim test page</td>
+		<td colspan="8">TestPage</td>
+	</tr>
+	<tr>
+		<td>and test content is</td>
+		<td colspan="8">
+
+!|SQLCommand|TestDatabase|select Profession from TestData where NAME= '%NAME%' and CITY= '%CITY%'|
+|NAME       |CITY        |AGE                            |PROFESSION?                            |
+|James      |London      |43                             |                                       |
+|Bert       |Washington  |50                             |                                       |
+|Kim        |New York    |60                             |                                       |
+
+</td>
+	</tr>
+	<tr>
+		<td>when page</td>
+		<td>TestPage</td>
+		<td colspan="7">is tested and HTML is extracted</td>
+	</tr>
+	<tr>
+		<td>then</td>
+		<td>\d</td>
+		<td>assertions pass,</td>
+		<td>2</td>
+		<td>fail,</td>
+		<td>3</td>
+		<td>are ignored</td>
+		<td>0</td>
+		<td>exceptions thrown</td>
+	</tr>
+	<tr>
+		<td>and cell</td>
+		<td>AGE</td>
+		<td>has result</td>
+		<td colspan="6">fail</td>
+	</tr>
+	<tr>
+		<td>show Symbol</td>
+		<td colspan="8">$HTML_Input</td>
+	</tr>
+	<tr>
+		<td>show Symbol</td>
+		<td colspan="8">$HTML_Result</td>
+	</tr>
+	<tr>
+		<td>get collapsed executon log for page</td>
+		<td colspan="8">TestPage</td>
+	</tr>
+</table>
+<br/>If you must keep the column for any reason<br/><ul>
+	<li>To avoid that the input columns are flagged red  add the flag <b>outputFlagUnusedInputColumns=false</b></li>
+</ul>
+<br/><table>
+	<tr>
+		<td>SQLCommand</td>
+		<td>TestDatabase</td>
+		<td>select Profession from TestData where NAME= '%NAME%' and CITY= '%CITY%'</td>
+		<td>outputFlagUnusedInputColumns=false</td>
+	</tr>
+	<tr>
+		<td>NAME</td>
+		<td>CITY</td>
+		<td>AGE</td>
+		<td>PROFESSION?</td>
+	</tr>
+	<tr>
+		<td>James</td>
+		<td>London</td>
+		<td>43</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>Bert</td>
+		<td>Washington</td>
+		<td>50</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>Kim</td>
+		<td>New York</td>
+		<td>60</td>
+		<td></td>
+	</tr>
+</table>
+<br/><br/><div class="collapsible closed"><ul><li><a href='#' class='expandall'>Expand</a></li><li><a href='#' class='collapseall'>Collapse</a></li></ul>
+	<p class="title">Included page: <a href="FitNesse.SuiteAcceptanceTests.TearDown.html">.FitNesse.SuiteAcceptanceTests.TearDown</a> <a href="FitNesse.SuiteAcceptanceTests.TearDown?edit&amp;redirectToReferer=true&amp;redirectAction=.html" class="edit"></a></p>
+	<div><hr/>
+<br/><table>
+	<tr>
+		<td>tear down</td>
+	</tr>
+</table>
+<br/></div>
+</div>
+</article></body></html>

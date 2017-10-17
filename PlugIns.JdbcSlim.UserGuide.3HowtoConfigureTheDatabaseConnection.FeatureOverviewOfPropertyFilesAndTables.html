@@ -1,0 +1,153 @@
+<html><head><title>PlugIns.JdbcSlim.UserGuide.3HowtoConfigureTheDatabaseConnection.FeatureOverviewOfPropertyFilesAndTables</title><meta http-equiv='Content-Type' content='text/html;charset=UTF-8'/><link rel='stylesheet' type='text/css' href='css/fitnesse.css'/><script src='javascript/jquery-1.11.3.min.js' type='text/javascript'></script><script src='javascript/fitnesse.js' type='text/javascript'></script></head><body><header><h2>PlugIns.JdbcSlim.UserGuide.3HowtoConfigureTheDatabaseConnection.FeatureOverviewOfPropertyFilesAndTables</h2></header><article><h2><a href="PlugIns.html">PlugIns</a>
+<a href="PlugIns.JdbcSlim.html">JdbcSlim</a>
+<a href="PlugIns.JdbcSlim.UserGuide.html">UserGuide</a>
+<a href="PlugIns.JdbcSlim.UserGuide.3HowtoConfigureTheDatabaseConnection.html">3HowtoConfigureTheDatabaseConnection</a>
+</h2></br><br/>Tests should be focused on requirements and in business users language.<br/>On the other hand to implement the tests often additional configuration data is required.<br/>To keep these separate <b>Define Properties</b> can be used.<br/>They are like property files used commonly in Java.<br/>They define key value pairs of strings<br/><br/>Define Properties have the following advantages:<br/>* Properties can be defined on Wiki pages<br/>* Properties can be defined in files<br/>* Multiple property definitions can be merged into one big definition<br/>* Properties like passwords can be encrypted<br/>* A summary of all definitions can be added to the test results to track how the test was performed<br/>* Slim Symbols or Wiki Variables can be used to switch between different sets of properties <br/><br/><br/><div class="contents">
+	<b>Contents:</b>
+	<ul class="toc1">
+		<li>
+			<a href="PlugIns.JdbcSlim.UserGuide.3HowtoConfigureTheDatabaseConnection.FeatureOverviewOfPropertyFilesAndTables.CaseSensitive.html" class="test">Case Sensitive +</a>
+		</li>
+		<li>
+			<a href="PlugIns.JdbcSlim.UserGuide.3HowtoConfigureTheDatabaseConnection.FeatureOverviewOfPropertyFilesAndTables.PropertyDefinitionViaAScript.html" class="test">Property Definition Via A Script +</a>
+			<span class="pageHelp">: This needs a redesign - don't use!</span>
+		</li>
+		<li>
+			<a href="PlugIns.JdbcSlim.UserGuide.3HowtoConfigureTheDatabaseConnection.FeatureOverviewOfPropertyFilesAndTables.RemovingDefinitions.html" class="test">Removing Definitions +</a>
+		</li>
+	</ul>
+</div>
+<br/><br/>This page tests the combination of properties definition on this Fitnesse test page plus in a properties file. From the file again a definition <br/>on the wiki page is referenced.<br/><br/>The definitions are then used/printed in a Sheet Fixture to confirm the correctness.<br/><br/>The following rules applies<br/><ul>
+	<li>In files lines or keys starting with "#" are comments and will be ignored</li>
+	<li>All keys are trimmed and converted to lower case </li>
+	<li>If multiple entries for the same key exist only the value from the last one will remain</li>
+	<li>A key ".include" will add the content of "Sheet Definition Fixture" whose name matches the value. If such a definition doesn't exist content from a file with this name will be included. If no such file can be found the test will fail with an exception.  </li>
+	<li>A key ".keyStoreLocation" will load a file with a different encryption key</li>
+	<li>Values which must span multiple lines can be inserted in files between triple quotes """. See sample file below.</li>
+</ul>
+<br/>To test this page you need a file with the following content:<br/><br/><div class="collapsible"><ul><li><a href='#' class='expandall'>Expand</a></li><li><a href='#' class='collapseall'>Collapse</a></li></ul>
+	<p class="title">File Content</p>
+	<div>Version=v20131230<br/><br/>jdbcDriver=com.sybase.jdbc4.jdbc.SybDriver<br/>DBURL=jdbc:sybase:Tds:localhost/master<br/>DBUSER=sa<br/>DBPASSWORD=password<br/>.include=SubDefinition<br/>multiLine="""<br/>Line1<br/>Line2<br/>Line3<br/>"""<br/>nextKey=Something Else<br/></div>
+</div>
+<br/>The file must be named as defined in the following variable:<br/><span class="meta">variable defined: DefinitionFileName=${TestDbPath}definition.properties</span>
+<br/><br/><br/><br/><table>
+	<tr>
+		<td>Define Properties</td>
+		<td>TopDefinition</td>
+	</tr>
+	<tr>
+		<td>key</td>
+		<td>value</td>
+	</tr>
+	<tr>
+		<td>cmd</td>
+		<td>myCommand with %NAME%, %CITY%, %AGE%</td>
+	</tr>
+	<tr>
+		<td>DEBUG</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>COMMAND</td>
+		<td>YES</td>
+	</tr>
+	<tr>
+		<td>.include</td>
+		<td>./plugins/jdbcslim/TestDB/definition.properties</td>
+	</tr>
+	<tr>
+		<td>multiLine2</td>
+		<td>Hello
+World</td>
+	</tr>
+</table>
+<br/>The below "SubDefinition" will be included from the above file <br/><br/><br/><table>
+	<tr>
+		<td>Define Properties</td>
+		<td>SubDefinition</td>
+	</tr>
+	<tr>
+		<td>key</td>
+		<td>value</td>
+	</tr>
+	<tr>
+		<td>SORT</td>
+		<td>1,2,3,4</td>
+	</tr>
+	<tr>
+		<td>format.date</td>
+		<td>YYYY-MM-DD</td>
+	</tr>
+	<tr>
+		<td>version</td>
+		<td>OverwrittenFromSubDefintion</td>
+	</tr>
+</table>
+<br/>Check that all the content is now available<br/><table>
+	<tr>
+		<td>Table: SheetCommandBase</td>
+		<td>TopDefinition</td>
+		<td></td>
+		<td>SORT</td>
+	</tr>
+	<tr>
+		<td>Key?&lt;1</td>
+		<td colspan="3">Value?</td>
+	</tr>
+	<tr>
+		<td>cmd</td>
+		<td colspan="3">myCommand with %NAME%, %CITY%, %AGE%</td>
+	</tr>
+	<tr>
+		<td>command</td>
+		<td colspan="3">YES</td>
+	</tr>
+	<tr>
+		<td>dbpassword</td>
+		<td colspan="3">password</td>
+	</tr>
+	<tr>
+		<td>dburl</td>
+		<td colspan="3">jdbc:sybase:Tds:localhost/master</td>
+	</tr>
+	<tr>
+		<td>dbuser</td>
+		<td colspan="3">sa</td>
+	</tr>
+	<tr>
+		<td>debug</td>
+		<td colspan="3"></td>
+	</tr>
+	<tr>
+		<td>format.date</td>
+		<td colspan="3">YYYY-MM-DD</td>
+	</tr>
+	<tr>
+		<td>jdbcdriver</td>
+		<td colspan="3">com.sybase.jdbc4.jdbc.SybDriver</td>
+	</tr>
+	<tr>
+		<td>multiline</td>
+		<td colspan="3">Line1
+Line2
+Line3</td>
+	</tr>
+	<tr>
+		<td>multiline2</td>
+		<td colspan="3">Hello
+World</td>
+	</tr>
+	<tr>
+		<td>nextkey</td>
+		<td colspan="3">Something Else</td>
+	</tr>
+	<tr>
+		<td>sort</td>
+		<td colspan="3"></td>
+	</tr>
+	<tr>
+		<td>version</td>
+		<td colspan="3">OverwrittenFromSubDefintion</td>
+	</tr>
+</table>
+</article></body></html>

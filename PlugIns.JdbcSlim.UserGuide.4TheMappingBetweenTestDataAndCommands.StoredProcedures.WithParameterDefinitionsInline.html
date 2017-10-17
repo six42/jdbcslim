@@ -1,0 +1,90 @@
+<html><head><title>PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.StoredProcedures.WithParameterDefinitionsInline</title><meta http-equiv='Content-Type' content='text/html;charset=UTF-8'/><link rel='stylesheet' type='text/css' href='css/fitnesse.css'/><script src='javascript/jquery-1.11.3.min.js' type='text/javascript'></script><script src='javascript/fitnesse.js' type='text/javascript'></script></head><body><header><h2>PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.StoredProcedures.WithParameterDefinitionsInline</h2></header><article><h2><a href="PlugIns.html">PlugIns</a>
+<a href="PlugIns.JdbcSlim.html">JdbcSlim</a>
+<a href="PlugIns.JdbcSlim.UserGuide.html">UserGuide</a>
+<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.html">4TheMappingBetweenTestDataAndCommands</a>
+<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.StoredProcedures.html">StoredProcedures</a>
+</h2></br><br/>Inline Parameters in SQL commands are given as ?{Input Column&gt;Output Column:Type(Scale)=Default Value}<br/><br/><br/>Input Column = the name of the column which contains the input values<br/>Output Column = the name of the column which which contains the expected output value<br/>Type = the SQL datatype<br/>Scale = the scale parameter of the type<br/>Default Value = a default value which will be used if Input Column is not present in the table<br/><br/>Either Input or Output must be given the remaing parameters are optional.<br/><br/><br/><br/><h3>Table provides City as input - default will not be used</h3>
+<table>
+	<tr>
+		<td>SQLCommand</td>
+		<td>TestDatabase</td>
+		<td colspan="3">select * from TestData where Name =?{Name:12(10)} and City =?{City:12(10)=Berlin}</td>
+	</tr>
+	<tr>
+		<td>Name</td>
+		<td>City</td>
+		<td>ID?</td>
+		<td>Phone?</td>
+		<td>Profession?</td>
+	</tr>
+	<tr>
+		<td>James</td>
+		<td>London</td>
+		<td></td>
+		<td></td>
+		<td></td>
+	</tr>
+</table>
+<br/><h3>Table doesn't provides City as input - default will be used and a matching record found</h3>
+<table>
+	<tr>
+		<td>SQLCommand</td>
+		<td>TestDatabase</td>
+		<td colspan="4">select * from TestData where Name =?{Name:12(10)} and City =?{City:12(10)=Berlin}</td>
+	</tr>
+	<tr>
+		<td>Name</td>
+		<td>City?</td>
+		<td>ID?</td>
+		<td>Phone?</td>
+		<td colspan="2">Profession?</td>
+	</tr>
+	<tr>
+		<td>Bill</td>
+		<td>Berlin</td>
+		<td></td>
+		<td></td>
+		<td></td>
+		<td></td>
+	</tr>
+</table>
+<br/><br/><br/><h3>An external default overwrites an inline default</h3>
+in the following example a default for City <br/>is defined once in an external properties table <br/>and once inline the the sql command<br/>the external definition overwrites the inline definition<br/><h3>a matching record for 'London' and not 'Berlin' is found</h3>
+<table>
+	<tr>
+		<td>Define Properties</td>
+		<td>myDefaults</td>
+	</tr>
+	<tr>
+		<td>key</td>
+		<td>value</td>
+	</tr>
+	<tr>
+		<td>City</td>
+		<td>London</td>
+	</tr>
+</table>
+<br/><table>
+	<tr>
+		<td>SQLCommand</td>
+		<td>TestDatabase</td>
+		<td>select * from TestData where Name =?{Name:12(10)} and City =?{City:12(10)=Berlin}</td>
+		<td colspan="3">InputDefaults=myDefaults</td>
+	</tr>
+	<tr>
+		<td>Name</td>
+		<td>City?</td>
+		<td>ID?</td>
+		<td>Phone?</td>
+		<td colspan="2">Profession?</td>
+	</tr>
+	<tr>
+		<td>James</td>
+		<td>London</td>
+		<td></td>
+		<td></td>
+		<td></td>
+		<td></td>
+	</tr>
+</table>
+</article></body></html>

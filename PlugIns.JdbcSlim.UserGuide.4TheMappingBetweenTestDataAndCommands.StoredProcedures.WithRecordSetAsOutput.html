@@ -1,0 +1,73 @@
+<html><head><title>PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.StoredProcedures.WithRecordSetAsOutput</title><meta http-equiv='Content-Type' content='text/html;charset=UTF-8'/><link rel='stylesheet' type='text/css' href='css/fitnesse.css'/><script src='javascript/jquery-1.11.3.min.js' type='text/javascript'></script><script src='javascript/fitnesse.js' type='text/javascript'></script></head><body><header><h2>PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.StoredProcedures.WithRecordSetAsOutput</h2></header><article><h2><a href="PlugIns.html">PlugIns</a>
+<a href="PlugIns.JdbcSlim.html">JdbcSlim</a>
+<a href="PlugIns.JdbcSlim.UserGuide.html">UserGuide</a>
+<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.html">4TheMappingBetweenTestDataAndCommands</a>
+<a href="PlugIns.JdbcSlim.UserGuide.4TheMappingBetweenTestDataAndCommands.StoredProcedures.html">StoredProcedures</a>
+</h2></br><br/><br/><table>
+	<tr>
+		<td>Script</td>
+		<td>SQLCommand</td>
+		<td>TestDatabase</td>
+	</tr>
+	<tr>
+		<td colspan="3">open Connection</td>
+	</tr>
+	<tr>
+		<td>execute</td>
+		<td colspan="2">create alias IF NOT EXISTS selectStar for "six42.fitnesse.jdbcslim.SampleStoredProcedure.showTestData"</td>
+	</tr>
+	<tr>
+		<td>show</td>
+		<td colspan="2">success</td>
+	</tr>
+	<tr>
+		<td>show</td>
+		<td colspan="2">rawResult</td>
+	</tr>
+	<tr>
+		<td>show</td>
+		<td colspan="2">resultSheet</td>
+	</tr>
+	<tr>
+		<td>execute</td>
+		<td colspan="2">create alias IF NOT EXISTS myQuery for "six42.fitnesse.jdbcslim.SampleStoredProcedure.myquery"</td>
+	</tr>
+	<tr>
+		<td>show</td>
+		<td colspan="2">success</td>
+	</tr>
+	<tr>
+		<td>show</td>
+		<td colspan="2">rawResult</td>
+	</tr>
+	<tr>
+		<td>show</td>
+		<td colspan="2">resultSheet</td>
+	</tr>
+	<tr>
+		<td colspan="3">close Connection</td>
+	</tr>
+</table>
+<br/><br/><table>
+	<tr>
+		<td>SQLCommand</td>
+		<td>TestDatabase</td>
+		<td>call myquery('select * from TestData where Profession = ''Milkman''')</td>
+		<td colspan="2">QUERY</td>
+	</tr>
+	<tr>
+		<td>ID</td>
+		<td>Name</td>
+		<td>Phone</td>
+		<td>City</td>
+		<td>Profession</td>
+	</tr>
+	<tr>
+		<td>3</td>
+		<td>Tom</td>
+		<td>4567890</td>
+		<td>Seoul</td>
+		<td>Milkman</td>
+	</tr>
+</table>
+<br/></article></body></html>

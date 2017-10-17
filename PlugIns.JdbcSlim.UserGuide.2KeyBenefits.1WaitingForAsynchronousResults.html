@@ -1,0 +1,160 @@
+<html><head><title>PlugIns.JdbcSlim.UserGuide.2KeyBenefits.1WaitingForAsynchronousResults</title><meta http-equiv='Content-Type' content='text/html;charset=UTF-8'/><link rel='stylesheet' type='text/css' href='css/fitnesse.css'/><script src='javascript/jquery-1.11.3.min.js' type='text/javascript'></script><script src='javascript/fitnesse.js' type='text/javascript'></script></head><body><header><h2>PlugIns.JdbcSlim.UserGuide.2KeyBenefits.1WaitingForAsynchronousResults</h2></header><article><h2><a href="PlugIns.html">PlugIns</a>
+<a href="PlugIns.JdbcSlim.html">JdbcSlim</a>
+<a href="PlugIns.JdbcSlim.UserGuide.html">UserGuide</a>
+<a href="PlugIns.JdbcSlim.UserGuide.2KeyBenefits.html">2KeyBenefits</a>
+</h2></br><br/><br/><h3>Given</h3>
+<table>
+	<tr>
+		<td>SQLCommand</td>
+		<td>TestDatabase</td>
+		<td>select ID, City from TestData where ID ='%ID%'</td>
+	</tr>
+	<tr>
+		<td>ID</td>
+		<td colspan="2">City?</td>
+	</tr>
+	<tr>
+		<td>1</td>
+		<td colspan="2">Berlin</td>
+	</tr>
+</table>
+<br/><br/><table>
+	<tr>
+		<td>Define Properties</td>
+		<td>Dummy</td>
+	</tr>
+	<tr>
+		<td>key</td>
+		<td>value</td>
+	</tr>
+	<tr>
+		<td>CMD</td>
+		<td></td>
+	</tr>
+</table>
+<br/><table>
+	<tr>
+		<td colspan="5">Script</td>
+	</tr>
+	<tr>
+		<td colspan="5"># Your code here to create a Connection Object</td>
+	</tr>
+	<tr>
+		<td>start</td>
+		<td>SQLCommand</td>
+		<td colspan="3">Dummy</td>
+	</tr>
+	<tr>
+		<td>$Cnn=</td>
+		<td>testHomeMadeConnection;</td>
+		<td>jdbc:h2:mem:h2db;DB_CLOSE_DELAY=-1</td>
+		<td>na</td>
+		<td>na</td>
+	</tr>
+	<tr>
+		<td colspan="5"># Now add the connection symbol to be able to use it</td>
+	</tr>
+	<tr>
+		<td>addConnection;</td>
+		<td>ConnectionName</td>
+		<td colspan="3">$Cnn</td>
+	</tr>
+</table>
+<br/><h3>When An asynchronus sql update starts which will execute after 1 seconds</h3>
+<br/><table>
+	<tr>
+		<td colspan="5">Script</td>
+	</tr>
+	<tr>
+		<td>Start</td>
+		<td>DelayedExecutor</td>
+		<td>$Cnn</td>
+		<td>update TestData set City ='Miami' where ID='1'</td>
+		<td>1000</td>
+	</tr>
+</table>
+<br/><h3>Then the city value doesn't updates immediately</h3>
+<table>
+	<tr>
+		<td>SQLCommand</td>
+		<td>TestDatabase</td>
+		<td>select City from TestData where ID ='%ID%'</td>
+	</tr>
+	<tr>
+		<td>ID</td>
+		<td colspan="2">City?</td>
+	</tr>
+	<tr>
+		<td>1</td>
+		<td colspan="2">Berlin</td>
+	</tr>
+</table>
+<br/><h3>When we add a retry (50 times in 10 seconds)</h3>
+<h3>Then we catch the update once it happens</h3>
+<table>
+	<tr>
+		<td>SQLCommand</td>
+		<td>TestDatabase</td>
+		<td>select City from TestData where ID ='%ID%'</td>
+		<td>RETRY=50:10000</td>
+	</tr>
+	<tr>
+		<td>ID</td>
+		<td colspan="3">City?</td>
+	</tr>
+	<tr>
+		<td>1</td>
+		<td colspan="3">Miami</td>
+	</tr>
+</table>
+<br/><br/><br/><br/><h4>Revert updates done</h4>
+<table>
+	<tr>
+		<td>SQLCommand</td>
+		<td>TestDatabase</td>
+		<td>update TestData set City ='%City%' where ID='%ID%'</td>
+	</tr>
+	<tr>
+		<td>ID</td>
+		<td>City</td>
+		<td>Count?</td>
+	</tr>
+	<tr>
+		<td>1</td>
+		<td>Berlin</td>
+		<td>1</td>
+	</tr>
+</table>
+<br/><h4>Close the connection and remove it from the list of available connections</h4>
+<table>
+	<tr>
+		<td>Define Properties</td>
+		<td>UseHomeMadeConnection</td>
+	</tr>
+	<tr>
+		<td>key</td>
+		<td>value</td>
+	</tr>
+	<tr>
+		<td>DBConnection</td>
+		<td>ConnectionName</td>
+	</tr>
+	<tr>
+		<td>CMD</td>
+		<td></td>
+	</tr>
+</table>
+<br/><table>
+	<tr>
+		<td>Script: SQLCommand</td>
+		<td>UseHomeMadeConnection</td>
+	</tr>
+	<tr>
+		<td colspan="2">closeConnection</td>
+	</tr>
+	<tr>
+		<td>removeConnection</td>
+		<td>ConnectionName</td>
+	</tr>
+</table>
+</article></body></html>
