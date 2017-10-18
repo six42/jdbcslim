@@ -32,7 +32,6 @@ sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
 
 dependencies {
-  //compile files("../fitnesse/build/libs/fitnesse-20171016-standalone.jar')
   compile "org.fitnesse:fitnesse:20161106:standalone"
   compile "commons-codec:commons-codec:1.10"
   compileOnly "com.github.dbfit:dbfit:3.2.0"
