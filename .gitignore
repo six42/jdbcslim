@@ -45,7 +45,7 @@ Temporary Items
 #class files can be build
 classes/*
 
-# Jar files should only go into releases
+# Jar files should only go into releases/.
 *.jar
 
 FitNesseRoot/RecentChanges.wiki
