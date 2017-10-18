@@ -65,6 +65,7 @@ public class SheetFixture {
     if(commandExecuter.Properties().isDebug()) System.out.println(retry.toString());
     
 		// Add one empty line at the end to program around a bug in the table fixture 
+    // Likely extra logic required until Fitnesse#1055 is merged
 		result.add(new ArrayList<String>());
 
 		commandExecuter.endTable();

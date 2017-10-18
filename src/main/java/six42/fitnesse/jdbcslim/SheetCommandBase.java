@@ -177,6 +177,9 @@ public class SheetCommandBase implements SheetCommandInterface {
 
 	public int getRowCount() {
 		List<List<String>> sheet = this.resultSheet;
+
+    // Likely extra logic required until Fitnesse#1055 is merged
+    // return sheet == null || sheet.isEmpty() ? 0 : sheet.size() - 1;
 		return sheet == null || sheet.isEmpty() || (sheet.size() == 2 && sheet.get(1).isEmpty()) ? 0 : sheet.size() - 1;
 	}
 
