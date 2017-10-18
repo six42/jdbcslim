@@ -2,6 +2,7 @@ apply plugin: 'java'
 apply plugin: "jacoco"
 apply plugin: 'maven'
 apply plugin: 'signing'
+apply plugin: 'eclipse'
 
 group 'com.github.six42'
 version = '1.2.1'
@@ -10,6 +11,7 @@ version = '1.2.1'
 println "Building ${project.name} v${project.version}..."
 
 repositories {
+  mavenLocal()
   mavenCentral()
 }
 
@@ -30,15 +32,15 @@ sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
 
 dependencies {
+  //compile files("../fitnesse/build/libs/fitnesse-20171016-standalone.jar')
   compile "org.fitnesse:fitnesse:20161106:standalone"
   compile "commons-codec:commons-codec:1.10"
   compileOnly "com.github.dbfit:dbfit:3.2.0"
   testRuntime "com.github.dbfit:dbfit:3.2.0"
   testRuntime "net.sourceforge.csvjdbc:csvjdbc:1.0.34"
   testRuntime "com.h2database:h2:1.4.196"
-
-
-//  testCompile "junit:junit:4.12"
+  testCompile "org.hamcrest:hamcrest-all:1.3"
+  testCompile "junit:junit:4.12"
 }
 
 task fitNesseVersion {
@@ -56,7 +58,8 @@ task copyRuntimeLibs(type: Copy) {
   into "plugins/jdbcslim"
   from configurations.testRuntime
   from jar.archivePath
-  from "test/main/resources"
+  from "src/test/resources"
+  exclude 'junit*.jar', 'hamcrest*.jar'
 }
 
 test {
@@ -95,7 +98,7 @@ jacoco {
  }
 
 
-task coverageTest(type: JavaExec) {
+task inProcessTest(type: JavaExec) {
   dependsOn copyRuntimeLibs, jar
   systemProperty "file.encoding", "utf-8"
   classpath = sourceSets.main.output
@@ -107,30 +110,49 @@ task coverageTest(type: JavaExec) {
 
 
 jacoco {
-    applyTo coverageTest
+    applyTo inProcessTest
 }
-coverageTest{
+inProcessTest{
   jacoco{
  	append = false
   }
 }
 
-task coverageTestReport(type:JacocoReport){
-	dependsOn coverageTest
-    executionData coverageTest
+
+task coverageInProcessTestReport(type:JacocoReport){
+	dependsOn inProcessTest
+    executionData inProcessTest
     sourceSets sourceSets.main
 }
 
+test{
+  jacoco{
+ 	append = false
+  }
+}
+
+check.dependsOn jacocoTestReport
+
 
 task acceptanceTest(type: JavaExec) {
+  description = "spans slim process for testing"
   dependsOn copyRuntimeLibs
   classpath = configurations.testRuntime
   main "fitnesseMain.FitNesseMain"
   args "-o", "-c", "PlugIns.JdbcSlim.UserGuide?suite&format=text"
 }
 
-check.dependsOn acceptanceTest
-
+task createHtmlUserGuide(type: JavaExec) {
+  description = "experimental"
+  dependsOn copyRuntimeLibs
+  classpath = configurations.testRuntime
+  main "fitnesseMain.FitNesseMain"
+  args "-o", "-c", "PlugIns.JdbcSlim.UserGuide?suite&format=java"
+  //systemProperties['test.system'] = 'Example'
+  doFirst {
+    standardOutput = new FileOutputStream('build/reports/userguidejava.html')
+  }  
+}
 
 task javadocJar(type: Jar) {
   mustRunAfter check
