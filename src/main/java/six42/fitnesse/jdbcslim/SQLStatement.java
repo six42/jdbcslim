@@ -17,9 +17,11 @@ class SQLStatement {
   private String finalCommandString;
   private List<List<String>> inputParamterList;
   private Map<String, String> defaultList;
+  private String nullText;
 
-  public SQLStatement(String sqlCommand) {
+  public SQLStatement(String sqlCommand, String nullText) {
     this.initialCommandString = sqlCommand;
+    this.nullText = nullText;
     inputParamterList = new ArrayList<List<String>>();
     defaultList = new HashMap<String, String>();
 
@@ -137,6 +139,7 @@ class SQLStatement {
           if (sqlCommand.containsKey(columnName)) {
             Object obj = sqlCommand.get(columnName);
             String value = (obj != null) ? obj.toString() : null;
+            value = nullText.equals(value) ? null : value;
 
             if (scale == -1)
               cstmt.setObject(parameterIndex, value, sqlType);
@@ -144,6 +147,7 @@ class SQLStatement {
               cstmt.setObject(parameterIndex, value, sqlType, scale);
           } else if (defaultList.containsKey(columnName)) {
             String value = defaultList.get(columnName);
+            value = nullText.equals(value) ? null : value;
             if (scale == -1)
               cstmt.setObject(parameterIndex, value, sqlType);
             else

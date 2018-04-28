@@ -106,9 +106,10 @@ public class SQLCommand extends SheetCommandBase {
 
 		
     String updateCountHeaderName = Properties().getPropertyOrDefault(ConfigurationParameters.dbUpdateCount, defaultUpdateCountHeaderName);
+    String nullText = Properties().getPropertyOrDefault(
+        ConfigurationParameters.inputNullString, "#null#");
 
-
-    SQLStatement theStatement = new SQLStatement(sqlCommand);
+    SQLStatement theStatement = new SQLStatement(sqlCommand, nullText);
     theStatement.extractParametersFromCmd();
     theStatement.addParametersFromProperties(Properties(),
         ConfigurationParameters.dbQueryParameters);
