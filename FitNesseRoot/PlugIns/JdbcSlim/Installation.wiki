@@ -1,10 +1,7 @@
----
-LastModifyingUser: six42
----
 #Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
 #
 !2 Download the latest Jdbc Slim library from github.com/six42/jdbcslim
-!define JdbcSlimLib {jdbcslim.jar}
+!define JdbcSlimLib {jdbcslim*.jar}
 
 !2  Installation Path 
 Adujust the below path if you installed at a different location
@@ -16,7 +13,7 @@ The Jdbc Slim Library - always required
 
 !2 Further dependencies
 This is required to support encryption. It can be downloaded from https://github.com/dbfit/dbfit/releases/tag/v3.2.0
-!path ${LibInstallPath}commons-codec-1.10.jar
+!path ${LibInstallPath}commons-codec-*.jar
 !path ${LibInstallPath}dbfit-*.jar
 
 See the SuiteSetup pages for driver specific setup. 

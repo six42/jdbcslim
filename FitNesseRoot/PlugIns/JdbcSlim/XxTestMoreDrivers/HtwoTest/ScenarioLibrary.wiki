@@ -1,6 +1,3 @@
----
-LastModifyingUser: six42
----
 #Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
 #
 !contents -R2 -g -p -f -h

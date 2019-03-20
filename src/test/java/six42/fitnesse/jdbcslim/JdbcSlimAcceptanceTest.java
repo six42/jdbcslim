@@ -5,7 +5,8 @@ import org.junit.runner.RunWith;
 
 @RunWith(FitNesseRunner.class)
 @FitNesseRunner.FitnesseDir(".")
-@FitNesseRunner.OutputDir("target/fitnesse-results")
+@FitNesseRunner.OutputDir("build/reports/fitnesse-results")
 @FitNesseRunner.Suite("PlugIns.JdbcSlim.UserGuide")
+//@FitNesseRunner.DebugMode(false)
 public class JdbcSlimAcceptanceTest {
 }

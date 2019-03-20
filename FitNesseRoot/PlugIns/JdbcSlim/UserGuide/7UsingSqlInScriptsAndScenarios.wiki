@@ -31,10 +31,16 @@ The 'run' command will turn red if the query failes (similar to a call to 'succe
 
 !|Script|SQLCommand          |ScriptDefinition|
 |run    |select * from TestData               |
+|check  |getRowCount         |>0              |
 |show   |getColumnValueByName|NAME            |
+|show   |getRow              |1               |
 |show   |rawResult                            |
 |show   |resultSheet                          |
 |$RSOne=|resultSheet                          |
+
+!|Script|SQLCommand |ScriptDefinition        |
+|run    |select * from TestData where id='-1'|
+|check  |getRowCount|0                       |
 
 !1 Using SQLCommand in a scenario
 
@@ -47,18 +53,18 @@ from TestData
 where ID = '@id'
 }}} )
 
-|Scenario |The Id              |id   |isNamed|name|andHasPhone|phone|
-|execute  |select Name from !-TestData-! where ID = '@id'           |
-|show     |success                                                  |
-|show     |rawResult                                                |
-|show     |resultSheet                                              |
-|check    |getColumnValueByName|NAME |@name                         |
-|# use preformatted SQL                                             |
-|execute  |${SQL}                                                   |
-|show     |success                                                  |
-|show     |rawResult                                                |
-|show     |resultSheet                                              |
-|check    |getColumnValueByName|Phone|@phone                        |
+|Scenario|The Id              |id   |isNamed|name|andHasPhone|phone|
+|execute |select Name from !-TestData-! where ID = '@id'           |
+|show    |success                                                  |
+|show    |rawResult                                                |
+|show    |resultSheet                                              |
+|check   |getColumnValueByName|NAME |@name                         |
+|# use preformatted SQL                                            |
+|execute |${SQL}                                                   |
+|show    |success                                                  |
+|show    |rawResult                                                |
+|show    |resultSheet                                              |
+|check   |getColumnValueByName|Phone|@phone                        |
 
 
 
@@ -71,11 +77,11 @@ where ID = '@id'
 !3 Call the scenario in a Decision Table
 
 !|The Id  Is Named And Has Phone|
-|id      |name       |phone     |
-|2       |Ben        |>0        |
-|4       |Till       |>100      |
-|3       |Tom        |>10       |
-|2       |=~/Be/     |>5        |
+|id|name  |phone                |
+|2 |Ben   |>0                   |
+|4 |Till  |>100                 |
+|3 |Tom   |>10                  |
+|2 |=~/Be/|>5                   |
 
 !3 Call the scenario in a Script Table
 

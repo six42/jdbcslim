@@ -1,0 +1,238 @@
+apply plugin: 'java'
+apply plugin: "jacoco"
+apply plugin: 'maven'
+apply plugin: 'signing'
+apply plugin: 'eclipse'
+
+group 'com.github.six42'
+version = '1.2.3'
+//version = new Date().format('yyyyMMdd')
+
+println "Building ${project.name} v${project.version}..."
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+}
+
+configurations {
+  compile {
+    transitive = false
+  }
+  runtime {
+    transitive = false
+  }
+  testRuntime {
+    transitive = false
+  }
+}
+
+
+sourceCompatibility = '1.7'
+targetCompatibility = '1.7'
+
+dependencies {
+  compile "org.fitnesse:fitnesse:20161106:standalone"
+  compile "commons-codec:commons-codec:1.10"
+  compileOnly "com.github.dbfit:dbfit:3.2.0"
+  testRuntime "com.github.dbfit:dbfit:3.2.0"
+  testRuntime "net.sourceforge.csvjdbc:csvjdbc:1.0.34"
+  testRuntime "com.h2database:h2:1.4.196"
+  testCompile "org.hamcrest:hamcrest-all:1.3"
+  testCompile "junit:junit:4.12"
+}
+
+task fitNesseVersion {
+  def versionFile = new File("${sourceSets.main.output.resourcesDir}/META-INF/Version.txt")
+  versionFile.parentFile.mkdirs()
+  versionFile.text="v${version}"
+}
+
+
+
+processResources.dependsOn "fitNesseVersion"  
+
+task copyRuntimeLibs(type: Copy) {
+  dependsOn jar
+  into "plugins/jdbcslim"
+  from configurations.testRuntime
+  from jar.archivePath
+  from "src/test/resources"
+  exclude 'junit*.jar', 'hamcrest*.jar'
+}
+
+test {
+  dependsOn copyRuntimeLibs
+  maxParallelForks 1
+}
+
+
+task run(type: JavaExec) {
+  dependsOn copyRuntimeLibs
+  classpath = configurations.runtime
+  main "fitnesseMain.FitNesseMain"
+  args "-p", "8001"
+}
+
+jar {
+  into('Resources/FitNesseRoot/Plugins/JdbcSlim') {
+    from('FitNesseRoot/Plugins/JdbcSlim') {
+      include '**/*.wiki'
+    }
+  }
+  into('Resources/FitNesseRoot/Plugins/') {
+    from('FitNesseRoot/Plugins') {
+      include 'JdbcSlim.wiki'
+	}
+  }
+  manifest {
+    attributes("Implementation-Version": version)
+  }
+}
+
+
+
+jacoco {
+    toolVersion = "0.7.6.201602180812"
+ }
+
+
+task inProcessTest(type: JavaExec) {
+  dependsOn copyRuntimeLibs, jar
+  systemProperty "file.encoding", "utf-8"
+  classpath = sourceSets.main.output
+  classpath += configurations.testRuntime
+  
+  main "fitnesseMain.FitNesseMain"
+  args "-o", "-c", "PlugIns.JdbcSlim.UserGuide?suite&format=text&debug"
+}
+
+
+jacoco {
+    applyTo inProcessTest
+}
+inProcessTest{
+  jacoco{
+ 	append = false
+  }
+}
+
+
+task coverageInProcessTestReport(type:JacocoReport){
+	dependsOn inProcessTest
+    executionData inProcessTest
+    sourceSets sourceSets.main
+}
+
+test{
+  jacoco{
+ 	append = false
+  }
+}
+
+check.dependsOn jacocoTestReport
+
+
+task acceptanceTest(type: JavaExec) {
+  description = "spans slim process for testing"
+  dependsOn copyRuntimeLibs
+  classpath = configurations.testRuntime
+  main "fitnesseMain.FitNesseMain"
+  args "-o", "-c", "PlugIns.JdbcSlim.UserGuide?suite&format=text"
+}
+
+task createHtmlUserGuide(type: JavaExec) {
+  description = "experimental"
+  dependsOn copyRuntimeLibs
+  classpath = configurations.testRuntime
+  main "fitnesseMain.FitNesseMain"
+  args "-o", "-c", "PlugIns.JdbcSlim.UserGuide?suite&format=java"
+  //systemProperties['test.system'] = 'Example'
+  doFirst {
+    standardOutput = new FileOutputStream('build/reports/userguidejava.html')
+  }  
+}
+
+task javadocJar(type: Jar) {
+  mustRunAfter check
+  classifier = 'javadoc'
+  from javadoc
+}
+
+task sourcesJar(type: Jar) {
+  mustRunAfter check
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+
+build.dependsOn javadocJar
+build.dependsOn sourcesJar
+
+clean{
+  delete "plugins/jdbcslim"
+}
+
+
+/////////////////////////////////////////
+// Below is required for publishing
+/////////////////////////////////////////
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives.dependsOn build
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      pom.project {
+        name 'jdbcslim'
+        artifactId 'jdbcslim'
+        packaging 'jar'
+        description 'JdbcSlim is a Slim framework for FitNesse to access and test data via jdbc driver.'
+        url 'http://github.com/six42/jdbcslim'
+
+        scm {
+    connection 'scm:git:git://github.com/six42/jdbcslim.git'
+    developerConnection 'scm:git:git@github.com:six42/jdbcslim.git'
+    url 'scm:git:http://github.com/six42/jdbcslim'
+        }
+
+        licenses {
+          license {
+      name 'Mozilla Public License 2.0'
+      url 'https://choosealicense.com/licenses/mpl-2.0/'
+          }
+        }
+
+        developers {
+          developer {
+			id 'six42'
+			name 'Six42'
+			email 'six42@gmx.net'
+          }
+        }
+      }
+    }
+  }
+}
+
+wrapper {
+  gradleVersion = '2.13'
+}
