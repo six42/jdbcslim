@@ -2,10 +2,8 @@
 
 - [JdbcSlim](#jdbcslim)
 - [Documentation](#documentation)
-   * [download.documentation](#downloaddocumentation)
 - [Installation](#installation)
-   * [Installation.Ant](#installationant)
-   * [Installation.Maven](#installationmaven)
+- [Build](#build)
 
 # JdbcSlim
 
@@ -22,14 +20,31 @@ Such things should be handled by the jdbc driver.
 Nevertheless the jdbc code is segregated from the slim code and adding any driver specific requirements can be done by simply changing a single class.
 
 ## Documentation
-Read the documentation online: http://rawgit.com/six42/jdbcslim/master/JdbcSlim.htm
-### Download.documentation
-Or download it for correct formatting: https://raw.githubusercontent.com/six42/jdbcslim/master/JdbcSlim.htm
+Read the documentation online: https://six42.github.io/fitnesse-blog/PlugIns.JdbcSlim.UserGuide.html
 
 ## Installation
-To build jdbcSlim yourself you can use Ant or Maven.
 
-### Installation.Ant
+Read [Installation.wiki](https://github.com/six42/jdbcslim/blob/master/FitNesseRoot/PlugIns/JdbcSlim/Installation.wiki) how to use a [jdbcslim relaese](https://github.com/six42/jdbcslim/releases) in your fitnesse instance:
+
+
+## Build
+You only need to build yourself if you want to contribute to JdbcSlim.
+
+To build jdbcSlim yourself you can use Gradle, Maven or Ant.
+
+Gradle is the preferred build tool and the build script actively maintained.
+Maven and Ant are only maintained by the community and might not be up to date.
+
+### Build.Gradle
+To build and run all tests, run the command
+
+```
+$ ./gradlew test
+```
+
+NB. On windows call `gradlew.bat` instead of `./gradlew`.
+
+### Build.Ant
 To build jdbcSlim yourself with Ant clone this repository and add the following jar files in the folder `plugins/jdbcslim`:
 
 | **File** | **Link** |
@@ -47,7 +62,7 @@ JdbcSlim testpages available on .Plugins.JdbcSlim.UserGuide (http://localhost:80
 
 Once all tests pass execute `ant build` to validate that the acceptance test pass from the command line.
 
-### Installation.Maven
+### Build.Maven
 Note: Maven is not the strategic build tool and new versions are not tested against it.
 
 Execute `mvn clean package` to copy dependencies and build `jdbcslim.jar` in the folder `plugins/jdbcslim`.
