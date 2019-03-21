@@ -11,14 +11,13 @@
     <name>Six42 jdbcSlim FitNesse Fixtures</name>
     <description>JdbcSlim is a Slim framework for FitNesse to access and test data via jdbc driver.</description>
 
-    <!--<licenses>-->
-    <!--<license>-->
-    <!--<name> </name>-->
-    <!--<url> </url>-->
-    <!--<distribution> </distribution>-->
-    <!--<comments> </comments>-->
-    <!--</license>-->
-    <!--</licenses>-->
+    <licenses>
+        <license>
+            <name>Mozilla Public License Version 2.0</name>
+            <url>http://www.mozilla.org/MPL/2.0/index.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
 
     <!--<developers>-->
     <!--<developer>-->
@@ -68,12 +67,26 @@
             <scope>test</scope>
         </dependency>
 
+         <dependency>
+             <groupId>com.h2database</groupId>
+             <artifactId>h2</artifactId>
+             <version>RELEASE</version>
+             <scope>test</scope>
+         </dependency>
+         <dependency>
+             <groupId>net.sourceforge.csvjdbc</groupId>
+             <artifactId>csvjdbc</artifactId>
+             <version>RELEASE</version>
+             <scope>test</scope>
+         </dependency>
+
         <!-- Project specific: This is required to support encryption. -->
         <!-- https://mvnrepository.com/artifact/com.github.dbfit/dbfit -->
         <dependency>
             <groupId>com.github.dbfit</groupId>
             <artifactId>dbfit</artifactId>
             <version>3.2.0</version>
+            <optional>true</optional>
             <!-- A long list of exclusions, we don't need all the libraries coming with dbfit. -->
             <exclusions>
                 <exclusion>
@@ -140,6 +153,14 @@
                     <groupId>org.eclipse.jgit</groupId>
                     <artifactId>org.eclipse.jgit</artifactId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>hsqldb</artifactId>
+                    <groupId>org.hsqldb</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>fitnesse</artifactId>
+                    <groupId>org.fitnesse</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -176,16 +197,6 @@
                 <configuration>
                     <filesets>
                         <fileset>
-                            <!-- On clean throw away old screenshots, pagesources and downloads -->
-                            <directory>FitNesseRoot/files/</directory>
-                            <followSymlinks>false</followSymlinks>
-                            <includes>
-                                <include>screenshots/**</include>
-                                <include>pagesources/**</include>
-                                <include>downloads/**</include>
-                            </includes>
-                        </fileset>
-                        <fileset>
                             <directory>plugins/jdbcslim</directory>
                             <includes>
                                 <include>**/*.jar</include>
@@ -198,6 +209,41 @@
                 </configuration>
             </plugin>
 
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.20</version>
+                <configuration>
+                    <excludes>
+                        <!-- this test actually runs fitnesse tests
+                             therefore it will only be executed for
+                             integration-test goal
+                        -->
+                        <exclude>**/JdbcSlimAcceptanceTest.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.20</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!-- this test actually runs fitnesse tests-->
+                    <test>JdbcSlimAcceptanceTest</test>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.surefire</groupId>
+                        <artifactId>surefire-junit47</artifactId>
+                        <version>2.20</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -265,7 +311,7 @@
                     </execution>
 
                     <execution>
-                        <phase>install</phase>
+                        <phase>prepare-package</phase>
                         <goals>
                             <goal>copy-dependencies</goal>
                         </goals>
