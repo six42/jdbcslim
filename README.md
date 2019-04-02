@@ -24,7 +24,7 @@ Read the documentation online: https://six42.github.io/fitnesse-blog/PlugIns.Jdb
 
 ## Installation
 
-Read [Installation.wiki](https://github.com/six42/jdbcslim/blob/master/FitNesseRoot/PlugIns/JdbcSlim/Installation.wiki) how to use a [jdbcslim relaese](https://github.com/six42/jdbcslim/releases) in your fitnesse instance:
+Read [Installation.wiki](https://github.com/six42/jdbcslim/blob/master/FitNesseRoot/PlugIns/JdbcSlim/Installation.wiki) how to use a [jdbcslim release](https://github.com/six42/jdbcslim/releases) in your fitnesse instance:
 
 
 ## Build
