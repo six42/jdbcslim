@@ -1,7 +1,7 @@
 #Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
 #
 !3 The Scenario with two execute statements
-!|Scenario|Get The Name        |name |and phone number|phone|for id|id|
+!|Scenario|Get The Name        |name? |and phone number|phone?|for id|id|
 |execute  |select Name from TestData where ID = '@id'                 |
 |show     |success                                                    |
 |show     |rawResult                                                  |

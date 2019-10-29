@@ -49,6 +49,9 @@ classes/*
 *.jar
 
 FitNesseRoot/RecentChanges.wiki
+FitNesseRoot/PlugIns/content.txt
+FitNesseRoot/PlugIns/properties.xml
+FitNesseRoot/PlugIns.wiki
 
 # IDE files
 /.idea/
@@ -58,3 +61,7 @@ target/
 
 build/
 .gradle/
+.classpath
+.project
+.settings/
+bin/
