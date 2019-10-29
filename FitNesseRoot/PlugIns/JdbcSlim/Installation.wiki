@@ -1,5 +1,9 @@
 #Copyright (C) 2015 by six42, All rights reserved. Contact the author via http://github.com/six42
 #
+
+# Uncomment to get more verbose output
+#!define SLIM_FLAGS {-v}
+
 !2 Download the latest Jdbc Slim library from github.com/six42/jdbcslim
 !define JdbcSlimLib {jdbcslim*.jar}
 

@@ -1,6 +1,6 @@
 package six42.fitnesse.jdbcslim;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import fitnesse.html.HtmlUtil;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,7 +22,7 @@ public class HtmlCleaner {
             Matcher matcher = PRE_FORMATTED_PATTERN.matcher(value);
             if (matcher.matches()) {
                 String escapedBody = matcher.group(1);
-                result = StringEscapeUtils.unescapeHtml(escapedBody);
+                result = HtmlUtil.unescapeHTML(escapedBody);
             }
         }
         return result;

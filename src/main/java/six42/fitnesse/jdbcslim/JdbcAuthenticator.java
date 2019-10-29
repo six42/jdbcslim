@@ -164,7 +164,7 @@ public class JdbcAuthenticator extends Authenticator {
       page.put("resource", request.getResource());
       page.setMainTemplate("unauthorized.vm");
       try {
-        response.setContent(page.html());
+        response.setContent(page.html(request));
       } catch (UnsupportedEncodingException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
