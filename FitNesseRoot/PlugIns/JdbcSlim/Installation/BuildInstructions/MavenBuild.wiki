@@ -2,7 +2,7 @@
 Help: Warning: Maven is not the strategic build tool and new versions are not tested against it
 Suites: decommission
 ---
-!1 Installation.Maven
+!1 Build.Maven
 
 !help
 
@@ -10,6 +10,6 @@ Execute `mvn clean compile dependency:copy-dependencies package` to copy depende
 
 Execute `mvn exec:exec` to start FitNesse (default: http://localhost:8080).
 
-JdbcSlim testpages available on .Plugins.JdbcSlim.UserGuide (http://localhost:8080/Plugins.JdbcSlim.UserGuide) execute this suite to verify tests can run.
+´JdbcSlim´ testpages available on .Plugins.JdbcSlim.UserGuide (http://localhost:8080/Plugins.JdbcSlim.UserGuide) execute this suite to verify tests can run.
 
 !contents -R2 -g -p -f -h

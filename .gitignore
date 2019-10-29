@@ -49,6 +49,7 @@ classes/*
 *.jar
 
 FitNesseRoot/RecentChanges.wiki
+FitNesseRoot/RerunLastFailures.wiki
 FitNesseRoot/PlugIns/content.txt
 FitNesseRoot/PlugIns/properties.xml
 FitNesseRoot/PlugIns.wiki
