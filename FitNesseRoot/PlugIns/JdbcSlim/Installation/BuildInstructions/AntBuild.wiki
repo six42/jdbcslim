@@ -1,0 +1,38 @@
+---
+Help: Warning: Ant is not the strategic build tool and new versions are not tested against it
+Static
+Suites: decommission
+---
+!1 Build.Ant
+
+!help
+
+!3 To build !-JdbcSlim-! yourself do the following:
+
+!note git clone https://github.com/six42/jdbcslim.git
+
+!5 place the following files in the folder plugins/jdbcslim
+
+|fitnesse-standalone.jar  | http://fitnesse.org (tested with version 20190716)|
+|dbfit-core-3.2.0.jar | http://dbfit.github.io/dbfit/ (extract from zip)|
+|commons-codec-1.10.jar | http://dbfit.github.io/dbfit/ (extract from zip)|
+|h2-1.4.196.jar | http://www.h2database.com/html/download.html|
+
+!note ant jar
+
+!note ant run
+
+!5 Start your browser at http://localhost:8080 and execute the suite .Plugins.JdbcSlim.UserGuide
+
+
+!5 once all tests pass run
+
+!note ant build
+
+!5 to validate that the acceptance test pass from the command line.
+
+!5 In case you use different versions from the above jars you have to update the pages:
+.PlugIns.JdbcSlim.Installation
+.PlugIns.JdbcSlim.XxTestMoreDrivers.HtwoTest.ScenarioLibrary
+.PlugIns.JdbcSlim.XxTestMoreDrivers.HtwoTest.SuiteSetUp
+

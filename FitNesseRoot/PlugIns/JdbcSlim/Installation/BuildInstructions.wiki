@@ -2,27 +2,26 @@
 
 !note git clone https://github.com/six42/jdbcslim.git
 
-!5 place the following files in the folder plugins/jdbcslim
+!4 build and run all tests, run the command
 
-|fitnesse-standalone.jar  | http://fitnesse.org (tested with version 20190716)|
-|dbfit-core-3.2.0.jar | http://dbfit.github.io/dbfit/ (extract from zip)|
-|commons-codec-1.10.jar | http://dbfit.github.io/dbfit/ (extract from zip)|
-|h2-1.4.196.jar | http://www.h2database.com/html/download.html|
+$ ./gradlew test
 
-!note ant jar
-
-!note ant run
-
-!5 Start your browser at http://localhost:8080 and execute the suite .Plugins.JdbcSlim.UserGuide
+NB. On windows call gradlew.bat instead of ./gradlew.
 
 
-!5 once all tests pass run
+!4 start !-FitNesse-! 
 
-!note ant build
+$ ./gradlew run
 
-!5 to validate that the acceptance test pass from the command line.
+Start your browser at http://localhost:8001 and execute the suite .Plugins.JdbcSlim.UserGuide
 
-!5 In case you use different versions from the above jars you have to update the pages:
+
+
+!4 validate that the acceptance test pass from the command line.
+
+$ ./gradlew acceptanceTest
+
+!3 In case you use different versions from the above jars you have to update the pages:
 .PlugIns.JdbcSlim.Installation
 .PlugIns.JdbcSlim.XxTestMoreDrivers.HtwoTest.ScenarioLibrary
 .PlugIns.JdbcSlim.XxTestMoreDrivers.HtwoTest.SuiteSetUp
