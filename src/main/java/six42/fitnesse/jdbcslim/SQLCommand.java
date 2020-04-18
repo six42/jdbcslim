@@ -160,7 +160,7 @@ public class SQLCommand extends SheetCommandBase {
     
     getOutputParameterValues(cstmt, resultTable, outputParamterMap);   
 
-
+    cstmt.close();
     
     // Only empty header columns? - then remove the (top 2) empty rows
     if(resultTable.get(0).isEmpty()){
