@@ -90,7 +90,7 @@ public class HeaderLine {
 					// The actual result has no matching column
 					// this makes it impossible to compare results
 					// throw an exception
-					throw new RuntimeException("The actual results have no column with the same name as expected column: " + (expectedIndex.getSortIndex()-1));
+					throw new RuntimeException("The actual result has no column with the same name as expected column: " + (expectedIndex.getSortIndex()-1));
 				}
 			}
 		return result;

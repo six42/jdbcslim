@@ -1,0 +1,22 @@
+---
+Test
+---
+#Copyright (C) 2020 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+
+
+!3 A query can only return a header and no data in a script
+ 
+!|script:SQLCommand|TestDatabase|  
+|run| select ID,Name from TestData where Name in('notThere', 'unknown')|
+|check| raw result|[[ID, NAME]]|
+|check| result sheet|[[ID, NAME]]|
+|check|getRowCount|0|
+
+!3 A query can only return a header and no data in a decision table
+
+!|SQLCommand|TestDatabase|select ID,Name from TestData where Name in('notThere', 'unknown')|SORT|
+|ID?|NAME?>|
+|=~/\A\z/|=~/\A\z/|
+
+!contents -R2 -g -p -f -h

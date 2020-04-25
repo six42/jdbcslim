@@ -1,0 +1,46 @@
+---
+Test
+---
+#Copyright (C) 2015-202 by six42, All rights reserved. Contact the author via http://github.com/six42
+#
+ 1 Empty result sets are displayed correctly
+ 2 An exception during execution is displayed with raw result information
+ 
+!include -c .FitNesse.SuiteAcceptanceTests.SuiteSlimTests.SetUp
+
+!define TestPageName {TestPage}
+
+!| script                          |
+|given Jdbc Slim test page|${TestPageName}|
+|and test content is                    |!-
+
+1
+
+!|SQLCommand|TestDatabase|select ID,Name from TestData where Name in('notThere', 'unknown')|SORT |
+|ID?|NAME?>|
+|1|notThere|
+|2|unknown|
+
+2
+
+!|SQLCommand|TestDatabase|select ID,Name from TestData where Name in('notThere', 'unknown')|SORT dbOnlyRowCount=RowCount dbPerf=ProcessingTime|
+|ID?|NAME?>|
+|1|notThere|
+|2|unknown|
+
+-! |  
+|when page|${TestPageName}| is tested and HTML is extracted|
+|then |\d | assertions pass, | 5| fail, | 0| are ignored | 1 | exceptions thrown|
+|and cell |\[-\]notThere | has result | fail|
+|and cell |The actual result has no column with the same name as expected column: 1.Result: \[\[RowCount, ProcessingTime\], \[0, 0.0..\]\]| has result | error|
+|show Symbol |$HTML_Input|
+|show Symbol |$HTML_Result|
+|get collapsed executon log for page|${TestPageName}|
+
+
+
+
+
+
+
+!include -c .FitNesse.SuiteAcceptanceTests.TearDown

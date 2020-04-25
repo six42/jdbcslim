@@ -5,7 +5,7 @@ apply plugin: 'signing'
 apply plugin: 'eclipse'
 
 group 'com.github.six42'
-version = '1.2.4'
+version = '1.2.5-snapshot'
 //version = new Date().format('yyyyMMdd')
 
 println "Building ${project.name} v${project.version}..."

@@ -161,13 +161,16 @@ public class SQLCommand extends SheetCommandBase {
     getOutputParameterValues(cstmt, resultTable, outputParamterMap);   
 
     cstmt.close();
-    
+
     // Only empty header columns? - then remove the (top 2) empty rows
-    if(resultTable.get(0).isEmpty()){
+    if (resultTable.get(0).isEmpty()) {
       resultTable.remove(0);
-      resultTable.remove(0);     
-    }
-    return resultTable;
+      resultTable.remove(0);
+      // Only header columns? but no data columns then remove the empty data row
+    } else if (resultTable.get(1).isEmpty()) {
+      resultTable.remove(1);
+	  }
+	return resultTable;
 	}
 
   /**
