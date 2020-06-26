@@ -8,7 +8,7 @@
 !define JdbcSlimLib {jdbcslim*.jar}
 
 !2  Installation Path 
-Adujust the below path if you installed at a different location
+Adjust the below path if you installed at a different location
 This path is relative to the folder in which FitNesse got started 
 !define LibInstallPath {${RootPath}/plugins/jdbcslim/}
 
