@@ -6,7 +6,7 @@
 
     <groupId>com.github.six42</groupId>
     <artifactId>jdbcslim</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.6</version>
     <url>https://github.com/six42/jdbcslim</url>
     <name>Six42 jdbcSlim FitNesse Fixtures</name>
     <description>JdbcSlim is a Slim framework for FitNesse to access and test data via jdbc driver.</description>
@@ -37,7 +37,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <fitnesse.version>20161106</fitnesse.version>
+        <fitnesse.version>20200501</fitnesse.version>
         <!-- classpath that Fitnesse uses when not starting from IDE/maven -->
         <standalone.classpath>${project.basedir}/plugins/jdbcslim</standalone.classpath>
         <targetdirectory>${standalone.classpath}</targetdirectory>
