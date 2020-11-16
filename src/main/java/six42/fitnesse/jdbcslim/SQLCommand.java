@@ -489,6 +489,23 @@ public class SQLCommand extends SheetCommandBase {
 
   }
 
+    /**
+     * set the login timeout of the jdbc driver
+     * @param dbLoginTimeout number of seconds before connection timeout
+     */
+    public void setLoginTimeout(int dbLoginTimeout){
+        DriverManager.setLoginTimeout(dbLoginTimeout);
+    }
+
+    /**
+     * get the current login timeout of the jdbc driver
+     * @return login timeout (sec)
+     */
+    public int getLoginTimeout(){
+        int dbLoginTimeout = DriverManager.getLoginTimeout();
+        return dbLoginTimeout;
+    }
+
   private int getMaxLoops() {
     if (cacheMaxLoops == null){
       String strValue = Properties().getPropertyOrDefault(ConfigurationParameters.jdbcMaxloops, "100");
