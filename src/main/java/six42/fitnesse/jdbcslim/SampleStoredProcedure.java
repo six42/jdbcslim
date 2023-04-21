@@ -9,19 +9,19 @@ import java.sql.Statement;
 public class SampleStoredProcedure {
 
   public static void showTestData(ResultSet[] rs)
-      throws SQLException {
+    throws SQLException {
 
-      Connection con = DriverManager.getConnection("jdbc:default:connection");
-      Statement stmt = null;
+    Connection con = DriverManager.getConnection("jdbc:default:connection");
+    Statement stmt = null;
 
-      String query =
-          "select * from TestData";
+    String query =
+      "select * from TestData";
 
-      stmt = con.createStatement();
-      rs[0] = stmt.executeQuery(query);
+    stmt = con.createStatement();
+    rs[0] = stmt.executeQuery(query);
   }
-  
+
   public static ResultSet myquery(Connection conn, String sql) throws SQLException {
     return conn.createStatement().executeQuery(sql);
-}
+  }
 }

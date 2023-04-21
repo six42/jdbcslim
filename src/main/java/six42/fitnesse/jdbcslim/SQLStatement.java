@@ -46,9 +46,9 @@ class SQLStatement {
       String defaultValue = m.group(5);
 
       inputColumnName = (inputColumnName != null ? inputColumnName.trim()
-          .toLowerCase() : "");
+        .toLowerCase() : "");
       outputColumnName = (outputColumnName != null ? outputColumnName.trim()
-          .toLowerCase() : "");
+        .toLowerCase() : "");
       scale = (scale != null ? ":" + scale : "");
       if (type == null) {
         type = "4";
@@ -56,8 +56,8 @@ class SQLStatement {
       }
       if (inputColumnName.isEmpty() && outputColumnName.isEmpty()) {
         throw new RuntimeException(
-            "A SQL parameter must be either mapped to an input or output column. Your pattern has none: "
-                + m.group(0));
+          "A SQL parameter must be either mapped to an input or output column. Your pattern has none: "
+            + m.group(0));
       }
       if (!inputColumnName.isEmpty()) {
         List<String> line = new ArrayList<String>();
@@ -86,12 +86,12 @@ class SQLStatement {
   }
 
   public void addParametersFromProperties(PropertiesInterface properties,
-      ConfigurationParameters configurationName) {
+                                          ConfigurationParameters configurationName) {
     String parameterName = properties.getPropertyOrDefault(configurationName,
-        "");
+      "");
     if (!parameterName.isEmpty()) {
       PropertiesLoader queryParameters = properties
-          .getSubProperties(parameterName);
+        .getSubProperties(parameterName);
       List<List<String>> table = queryParameters.toTable();
       table.remove(/* header line */0);
       inputParamterList.addAll(table);
@@ -99,12 +99,12 @@ class SQLStatement {
   }
 
   public void addDefaultsFromProperties(PropertiesInterface properties,
-      ConfigurationParameters configurationName) {
+                                        ConfigurationParameters configurationName) {
     String parameterName = properties.getPropertyOrDefault(configurationName,
-        "");
+      "");
     if (!parameterName.isEmpty()) {
       PropertiesLoader queryParameters = properties
-          .getSubProperties(parameterName);
+        .getSubProperties(parameterName);
       List<List<String>> table = queryParameters.toTable();
       table.remove(/* header line */0);
       for (List<String> keyValue : table) {
@@ -118,22 +118,22 @@ class SQLStatement {
   }
 
   public SortedMap<Integer, String> setInputParameters(CallableStatement cstmt,
-      SheetCommandInterface sqlCommand) {
+                                                       SheetCommandInterface sqlCommand) {
     SortedMap<Integer, String> outputParamterMap = new TreeMap<Integer, String>();
     for (int i = 0; i < inputParamterList.size(); i++) {
       try {
         String columnName = inputParamterList.get(i).get(0);
         String[] paramValues = inputParamterList.get(i).get(1).split(":");
         boolean inParameter = paramValues.length < 1 ? false : paramValues[0]
-            .toUpperCase().contains("I");
+          .toUpperCase().contains("I");
         boolean outParameter = paramValues.length < 1 ? false : paramValues[0]
-            .toUpperCase().contains("O");
+          .toUpperCase().contains("O");
         int parameterIndex = paramValues.length < 2 ? 0 : Integer
-            .parseInt(paramValues[1]);
+          .parseInt(paramValues[1]);
         int sqlType = paramValues.length < 3 ? 0 : Integer
-            .parseInt(paramValues[2]);
+          .parseInt(paramValues[2]);
         int scale = paramValues.length < 4 ? -1 : Integer
-            .parseInt(paramValues[3]);
+          .parseInt(paramValues[3]);
 
         if (inParameter) {
           if (sqlCommand.containsKey(columnName)) {
@@ -168,12 +168,12 @@ class SQLStatement {
         }
       } catch (NumberFormatException e) {
         throw new RuntimeException("Failed processing Query Parameter:"
-            + inputParamterList.get(i).get(0) + "="
-            + inputParamterList.get(i).get(1), e);
+          + inputParamterList.get(i).get(0) + "="
+          + inputParamterList.get(i).get(1), e);
       } catch (SQLException e) {
         throw new RuntimeException("Failed setting Query Parameter:"
-            + inputParamterList.get(i).get(0) + "="
-            + inputParamterList.get(i).get(1), e);
+          + inputParamterList.get(i).get(0) + "="
+          + inputParamterList.get(i).get(1), e);
       }
 
     }

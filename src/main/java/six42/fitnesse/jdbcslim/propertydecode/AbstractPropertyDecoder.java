@@ -12,65 +12,65 @@ import java.util.Map;
  * Base class for property decoder.
  */
 public abstract class AbstractPropertyDecoder implements PropertyDecoder {
-    private boolean debugFlag = false;
+  private boolean debugFlag = false;
 
-    @Override
-    public Map<String, String> process(Map<String, String> props) {
-        setDebugFromProperties(props);
-        configure(props);
+  @Override
+  public Map<String, String> process(Map<String, String> props) {
+    setDebugFromProperties(props);
+    configure(props);
 
-        if (canDecrypt()) {
-            return processProperties(props);
-        } else {
-            return props;
-        }
+    if (canDecrypt()) {
+      return processProperties(props);
+    } else {
+      return props;
     }
+  }
 
-    protected abstract boolean canDecrypt();
+  protected abstract boolean canDecrypt();
 
-    protected void configure(Map<String, String> props) {
-        List<String> keysToRemove = new ArrayList<String>(1);
-        for (Map.Entry<String, String> entry : props.entrySet()) {
-            String key = entry.getKey();
-            if (configureBasedOn(key, entry.getValue())) {
-                keysToRemove.add(key);
-            }
-        }
-        for (String key : keysToRemove) {
-            props.remove(key);
-        }
+  protected void configure(Map<String, String> props) {
+    List<String> keysToRemove = new ArrayList<String>(1);
+    for (Map.Entry<String, String> entry : props.entrySet()) {
+      String key = entry.getKey();
+      if (configureBasedOn(key, entry.getValue())) {
+        keysToRemove.add(key);
+      }
     }
-
-    protected abstract boolean configureBasedOn(String key, String value);
-
-    protected Map<String, String> processProperties(Map<String, String> props) {
-        Map<String, String> result = new LinkedHashMap<String, String>();
-        for (Map.Entry<String, String> entry : props.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            String encodedValue = PropertiesLoader.unwrapEncryptedValue(value);
-            if (encodedValue != null) {
-                value = decrypt(encodedValue);
-            }
-            result.put(key, value);
-        }
-        return result;
+    for (String key : keysToRemove) {
+      props.remove(key);
     }
+  }
 
-    protected abstract String decrypt(String encodedValue);
+  protected abstract boolean configureBasedOn(String key, String value);
 
-    protected void setDebugFromProperties(Map<String, String> props) {
-        String debugProp = props.get(ConfigurationParameters.DEBUG.toString().toLowerCase());
-        if (debugProp != null && !"false".equalsIgnoreCase(debugProp)) {
-            setDebug(true);
-        }
+  protected Map<String, String> processProperties(Map<String, String> props) {
+    Map<String, String> result = new LinkedHashMap<String, String>();
+    for (Map.Entry<String, String> entry : props.entrySet()) {
+      String key = entry.getKey();
+      String value = entry.getValue();
+      String encodedValue = PropertiesLoader.unwrapEncryptedValue(value);
+      if (encodedValue != null) {
+        value = decrypt(encodedValue);
+      }
+      result.put(key, value);
     }
+    return result;
+  }
 
-    public boolean isDebug(){
-        return debugFlag;
-    }
+  protected abstract String decrypt(String encodedValue);
 
-    public void setDebug(boolean debugFlag){
-        this.debugFlag = debugFlag;
+  protected void setDebugFromProperties(Map<String, String> props) {
+    String debugProp = props.get(ConfigurationParameters.DEBUG.toString().toLowerCase());
+    if (debugProp != null && !"false".equalsIgnoreCase(debugProp)) {
+      setDebug(true);
     }
+  }
+
+  public boolean isDebug() {
+    return debugFlag;
+  }
+
+  public void setDebug(boolean debugFlag) {
+    this.debugFlag = debugFlag;
+  }
 }

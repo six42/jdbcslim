@@ -33,20 +33,20 @@ import fitnesse.http.SimpleResponse;
  * Authenticator = six42.fitnesse.jdbcslim.jdbcAuthenticator
  * jdbcAuthenticator.properties = <i>file name with database properties</i>
  * </pre>
-*/
+ */
 
 public class JdbcAuthenticator extends Authenticator {
   private final String propertiesFileName = "JdbcAuthenticator.properties";
   private final String dbUrl;
   private Properties dbProperties;
-  
+
   private PwCache pwCache = new PwCache();
-  
+
   private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(JdbcAuthenticator.class.getName());
 
   public JdbcAuthenticator() {
     String jdbcDriver;
-    
+
     dbProperties = new Properties();
     try {
       dbProperties.load(new FileInputStream(new File(propertiesFileName)));
@@ -58,7 +58,7 @@ public class JdbcAuthenticator extends Authenticator {
       throw new ComponentInstantiationException("Failed to load properties required for JdbcAuthenticator '" + propertiesFileName + "'", e);
     }
     jdbcDriver = dbProperties.getProperty("JDBCDRIVER");
-    if(jdbcDriver == null) jdbcDriver = "";
+    if (jdbcDriver == null) jdbcDriver = "";
     try {
       Class.forName(jdbcDriver);
     } catch (ClassNotFoundException e1) {
@@ -68,7 +68,8 @@ public class JdbcAuthenticator extends Authenticator {
       //LOG.severe(e1.toString());
     }
     dbUrl = dbProperties.getProperty("DBURL");
-     if(dbUrl == null)  throw new RuntimeException("DBURL not defined. Required for JdbcAuthenticator. Check config file '" + propertiesFileName + "'");
+    if (dbUrl == null)
+      throw new RuntimeException("DBURL not defined. Required for JdbcAuthenticator. Check config file '" + propertiesFileName + "'");
 
   }
 
@@ -76,41 +77,41 @@ public class JdbcAuthenticator extends Authenticator {
   protected Responder unauthorizedResponder(FitNesseContext context, Request request) {
     return new UnauthorizedResponder(dbUrl);
   }
-  
+
   @Override
   public boolean isAuthenticated(String username, String password) {
-    if (username == null || password == null || username.isEmpty() || password.isEmpty()){
+    if (username == null || password == null || username.isEmpty() || password.isEmpty()) {
       return false;
     }
-    if(dbProperties==null) return false;
+    if (dbProperties == null) return false;
 
-    if(pwCache.hasUser(username, password)) return true;
+    if (pwCache.hasUser(username, password)) return true;
 
     try {
       dbProperties.setProperty("USER", username);
       dbProperties.setProperty("PASSWORD", password);
-      Connection dbConnection= DriverManager.getConnection(dbUrl, dbProperties);
+      Connection dbConnection = DriverManager.getConnection(dbUrl, dbProperties);
       dbConnection.close();
-      LOG.fine("Authenticated User '"+ username + "'");
+      LOG.fine("Authenticated User '" + username + "'");
       pwCache.addUser(username, password);
       return true;
-    }catch (SQLException e) {
-      LOG.warning("Failed to authenticate User '"+ username + "'");
+    } catch (SQLException e) {
+      LOG.warning("Failed to authenticate User '" + username + "'");
       LOG.warning(e.toString() + e.getMessage());
       return false;
-    }finally{
+    } finally {
       // Clear the pw and user in memory
       dbProperties.setProperty("PASSWORD", "");
       dbProperties.setProperty("USER", "");
     }
   }
 
-  private class PwCache{
-    private class PwCacheEntry{
+  private class PwCache {
+    private class PwCacheEntry {
       public String password;
       public long creationTime;
-      
-      public PwCacheEntry( String password){
+
+      public PwCacheEntry(String password) {
         this.password = password;
         this.creationTime = System.currentTimeMillis();
       }
@@ -118,18 +119,17 @@ public class JdbcAuthenticator extends Authenticator {
 
     private Map<String, PwCacheEntry> passwordMap = new HashMap<String, PwCacheEntry>();
     private PasswordCipher cipher = new HashingCipher();
-    private long timeout = 1000*60*20;
-    
+    private long timeout = 1000 * 60 * 20;
+
     public boolean hasUser(String username, String password) {
       PwCacheEntry c = passwordMap.get(username);
-      if(c != null){
-        if (System.currentTimeMillis()-  c.creationTime < timeout && c.password.equals(cipher.encrypt(password))){
-          LOG.finest("Authenticated User from Cache '"+ username + "'");
+      if (c != null) {
+        if (System.currentTimeMillis() - c.creationTime < timeout && c.password.equals(cipher.encrypt(password))) {
+          LOG.finest("Authenticated User from Cache '" + username + "'");
           return true;
-        }
-        else{
+        } else {
           passwordMap.remove(username);
-          LOG.fine("Removed User from Cache '"+ username + "'");
+          LOG.fine("Removed User from Cache '" + username + "'");
           return false;
         }
       }
@@ -143,7 +143,7 @@ public class JdbcAuthenticator extends Authenticator {
 
   private class UnauthorizedResponder implements Responder {
     private final String realm;
-    
+
     public UnauthorizedResponder(String realm) {
       super();
       this.realm = realm;

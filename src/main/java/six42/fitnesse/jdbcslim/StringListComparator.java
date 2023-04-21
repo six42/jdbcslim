@@ -21,7 +21,7 @@ public class StringListComparator implements Comparator<List<String>> {
   }
 
   public StringListComparator(List<HeaderCell> SortKeys1,
-      List<HeaderCell> SortKeys2) {
+                              List<HeaderCell> SortKeys2) {
     _SortKeys1 = SortKeys1;
     _SortKeys2 = SortKeys2;
   }
@@ -32,8 +32,8 @@ public class StringListComparator implements Comparator<List<String>> {
     for (int i = 0; i < _SortKeys1.size(); i++) {
       int sortIndex1 = _SortKeys1.get(i).getSortIndex() - 1;
       int sortIndex2 = _SortKeys2.get(i).getSortIndex() - 1;
-      String aStr1 = sortIndex1 < a1.size() ?  a1.get(sortIndex1) : null;
-      String aStr2 = sortIndex2 < a2.size() ?  a2.get(sortIndex2) : null;
+      String aStr1 = sortIndex1 < a1.size() ? a1.get(sortIndex1) : null;
+      String aStr2 = sortIndex2 < a2.size() ? a2.get(sortIndex2) : null;
       int sortDirection = _SortKeys1.get(i).getSortDirection();
       // treat two null as equal
       if (aStr1 == null && aStr2 == null) {
@@ -56,7 +56,7 @@ public class StringListComparator implements Comparator<List<String>> {
           r = aL1.compareTo(aL2);
         } catch (NumberFormatException e) {
           System.out.println("Failed to convert to Long: '" + aStr1 + "' '"
-              + aStr2 + "'");
+            + aStr2 + "'");
           e.printStackTrace();
           r = aStr1.compareTo(aStr2);
         }
@@ -67,7 +67,7 @@ public class StringListComparator implements Comparator<List<String>> {
           r = aD1.compareTo(aD2);
         } catch (NumberFormatException e) {
           System.out.println("Failed to convert to Double: '" + aStr1 + "' '"
-              + aStr2 + "'");
+            + aStr2 + "'");
           e.printStackTrace();
           r = aStr1.compareTo(aStr2);
         }
