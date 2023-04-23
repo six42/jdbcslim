@@ -23,27 +23,27 @@ public class SQLCommand extends SheetCommandBase {
 
   private final String defaultUpdateCountHeaderName = "Count";
   private final String disabledValue = "false";
-	
-	private Connection dbConnection;
+
+  private Connection dbConnection;
   private boolean mustCloseConnection;
-	static private Map<String, Connection> theConnections = new HashMap<String, Connection>();
+  static private Map<String, Connection> theConnections = new HashMap<String, Connection>();
 
   private Map<String, String> rowValues = new HashMap<String, String>();
   private Map<String, String> usedRowValues = new HashMap<String, String>();
 
- 	private Integer cacheMaxLoops;
-	
-	public SQLCommand(String configurationOptions, String rawCommand,  String outputFormatOptions) throws FileNotFoundException, IOException{
-		super(configurationOptions, rawCommand, outputFormatOptions);
-	}
+  private Integer cacheMaxLoops;
 
-	public SQLCommand(String configurationOptions, String rawCommand) throws FileNotFoundException, IOException{
-		super(configurationOptions, rawCommand);
-	}
+  public SQLCommand(String configurationOptions, String rawCommand, String outputFormatOptions) throws FileNotFoundException, IOException {
+    super(configurationOptions, rawCommand, outputFormatOptions);
+  }
 
-	public SQLCommand(String configurationOptions) throws FileNotFoundException, IOException{
-		super(configurationOptions);
-	}
+  public SQLCommand(String configurationOptions, String rawCommand) throws FileNotFoundException, IOException {
+    super(configurationOptions, rawCommand);
+  }
+
+  public SQLCommand(String configurationOptions) throws FileNotFoundException, IOException {
+    super(configurationOptions);
+  }
 
   @Override
   public void reset() {
@@ -72,93 +72,91 @@ public class SQLCommand extends SheetCommandBase {
   public Set<String> getUsedColumnNames() {
     return usedRowValues.keySet();
   }
-  
- 
 
-	@Override
-	public void execute() {
 
-		if (Properties().isDebug()) System.out.println("begin execute:"+ success + ":" + command());
-		
-		if (success) {
-			try{
-				resultSheet = dbExecute(command());
-				rawResult = null;
-			} catch (SQLException e) {
-			  System.err.println("Got Exception in SQLCommand dbExecute:" + e.getMessage());
-				success = false;
-				rawResult = "Database execution failed:" + e.getMessage();
-				resultSheet = null;
-				return;
-			}
+  @Override
+  public void execute() {
 
-		}
-		else{
-			rawResult = "Skipped this command as a previous command failed.";
-		}
-	}
+    if (Properties().isDebug()) System.out.println("begin execute:" + success + ":" + command());
 
-	private List<List<String>> dbExecute(String sqlCommand) throws SQLException{
-		CallableStatement cstmt = null;
-		boolean resultsAvailable;
-		
-		List<List<String>> resultTable = new ArrayList<List<String>>();
+    if (success) {
+      try {
+        resultSheet = dbExecute(command());
+        rawResult = null;
+      } catch (SQLException e) {
+        System.err.println("Got Exception in SQLCommand dbExecute:" + e.getMessage());
+        success = false;
+        rawResult = "Database execution failed:" + e.getMessage();
+        resultSheet = null;
+        return;
+      }
 
-		
+    } else {
+      rawResult = "Skipped this command as a previous command failed.";
+    }
+  }
+
+  private List<List<String>> dbExecute(String sqlCommand) throws SQLException {
+    CallableStatement cstmt = null;
+    boolean resultsAvailable;
+
+    List<List<String>> resultTable = new ArrayList<List<String>>();
+
+
     String updateCountHeaderName = Properties().getPropertyOrDefault(ConfigurationParameters.dbUpdateCount, defaultUpdateCountHeaderName);
     String nullText = Properties().getPropertyOrDefault(
-        ConfigurationParameters.inputNullString, "#null#");
+      ConfigurationParameters.inputNullString, "#null#");
 
     SQLStatement theStatement = new SQLStatement(sqlCommand, nullText);
     theStatement.extractParametersFromCmd();
     theStatement.addParametersFromProperties(Properties(),
-        ConfigurationParameters.dbQueryParameters);
+      ConfigurationParameters.dbQueryParameters);
     theStatement.addDefaultsFromProperties(Properties(),
-        ConfigurationParameters.inputDefaults);
+      ConfigurationParameters.inputDefaults);
 
     cstmt = dbConnection.prepareCall(theStatement.sqlCommand());
 
-    SortedMap<Integer, String> outputParamterMap = theStatement
-        .setInputParameters(cstmt, this);
-    
+    SortedMap<Integer, String> outputParameterMap = theStatement
+      .setInputParameters(cstmt, this);
+
     TimeMeasurement executionTime = (new TimeMeasurement()).start();
     resultsAvailable = cstmt.execute();
     executionTime.stop();
     TimeMeasurement retrievelTime = (new TimeMeasurement()).start();
-    resultTable =getResultSetsAndUpdateCounts(cstmt, resultsAvailable,  updateCountHeaderName,
-        Properties().getBooleanPropertyOrDefault(ConfigurationParameters.outputMultipleRecordsetsAsExtraColumns, true));
+    resultTable = getResultSetsAndUpdateCounts(cstmt, resultsAvailable, updateCountHeaderName,
+      Properties().getBooleanPropertyOrDefault(ConfigurationParameters.outputMultipleRecordsetsAsExtraColumns, true));
     retrievelTime.stop();
 
     String perfHeader;
     perfHeader = Properties().getPropertyOrDefault(ConfigurationParameters.dbPerf, disabledValue);
-    if(!disabledValue.equalsIgnoreCase(perfHeader)){
+    if (!disabledValue.equalsIgnoreCase(perfHeader)) {
       resultTable.get(0).add(perfHeader);
-      resultTable.get(1).add(String.format("%ts.%<tL", retrievelTime.elapsed()+executionTime.elapsed()));
+      resultTable.get(1).add(String.format("%ts.%<tL", retrievelTime.elapsed() + executionTime.elapsed()));
     }
     perfHeader = Properties().getPropertyOrDefault(ConfigurationParameters.dbPerfExecution, disabledValue);
-    if(!disabledValue.equalsIgnoreCase(perfHeader)){
+    if (!disabledValue.equalsIgnoreCase(perfHeader)) {
       resultTable.get(0).add(perfHeader);
       resultTable.get(1).add(String.format("%ts.%<tL", executionTime.elapsed()));
     }
     perfHeader = Properties().getPropertyOrDefault(ConfigurationParameters.dbPerfRetrieval, disabledValue);
-    if(!disabledValue.equalsIgnoreCase(perfHeader)){
+    if (!disabledValue.equalsIgnoreCase(perfHeader)) {
       resultTable.get(0).add(perfHeader);
       resultTable.get(1).add(String.format("%ts.%<tL", retrievelTime.elapsed()));
     }
-    
-    
+
+
     // Get Identity columns if flag has been set
-    if(Properties().getBooleanPropertyOrDefault(ConfigurationParameters.dbGetgeneratedKeys, false)){
+    if (Properties().getBooleanPropertyOrDefault(ConfigurationParameters.dbGetgeneratedKeys, false)) {
       if (Properties().isDebug()) System.out.println("Processing Generated Keys:");
-      try{
+      try {
         ResultSet gkrs = cstmt.getGeneratedKeys();
         convertRsIntoTable(resultTable, gkrs, true, disabledValue);
-      }catch (Exception e){
+      } catch (Exception e) {
         if (Properties().isDebug()) System.out.println("Failed to get Generated Keys:" + e.getMessage());
       }
     }
-    
-    getOutputParameterValues(cstmt, resultTable, outputParamterMap);   
+
+    getOutputParameterValues(cstmt, resultTable, outputParameterMap);
 
     cstmt.close();
 
@@ -169,26 +167,25 @@ public class SQLCommand extends SheetCommandBase {
       // Only header columns? but no data columns then remove the empty data row
     } else if (resultTable.get(1).isEmpty()) {
       resultTable.remove(1);
-	  }
-	return resultTable;
-	}
+    }
+    return resultTable;
+  }
 
   /**
    * @param cstmt
    * @param resultTable
-   * @param outputParamterMap 
-   *  - the map keys are the positions of the output parameters in the CallableStatement
-   *  - the map values are the names of the column headers
+   * @param outputParameterMap - the map keys are the positions of the output parameters in the CallableStatement
+   *                          - the map values are the names of the column headers
    */
   protected void getOutputParameterValues(CallableStatement cstmt,
-      List<List<String>> resultTable,
-      final SortedMap<Integer, String> outputParamterMap) {
-    for (Map.Entry<Integer, String> entry : outputParamterMap.entrySet()){
+                                          List<List<String>> resultTable,
+                                          final SortedMap<Integer, String> outputParameterMap) {
+    for (Map.Entry<Integer, String> entry : outputParameterMap.entrySet()) {
       String value = "";
-      try{
+      try {
         Object o = cstmt.getObject(entry.getKey());
         value = (o == null) ? null : o.toString();
-      }catch (SQLException e){
+      } catch (SQLException e) {
         value = e.getMessage();
       }
       resultTable.get(0).add(entry.getValue());
@@ -196,187 +193,188 @@ public class SQLCommand extends SheetCommandBase {
     }
   }
 
-  private  List<List<String>> getResultSetsAndUpdateCounts(Statement stmt, boolean resultSetAvailable,  String updateCountHeaderName, boolean extend) throws SQLException
-  {
- 
-     List<List<String>> results = new ArrayList<List<String>>();
-     results.add(new ArrayList<String>());// Empty Header
-     results.add(new ArrayList<String>());// Empty First Row
+  private List<List<String>> getResultSetsAndUpdateCounts(Statement stmt, boolean resultSetAvailable, String updateCountHeaderName, boolean extend) throws SQLException {
 
-     boolean supportsMultiResultSets = dbConnection.getMetaData().supportsMultipleResultSets();
-     if (Properties().isDebug()) System.out.println("supportsMultiResultSets:" + supportsMultiResultSets + "; Additional Sets will be added as Columns:" + extend);
+    List<List<String>> results = new ArrayList<List<String>>();
+    results.add(new ArrayList<String>());// Empty Header
+    results.add(new ArrayList<String>());// Empty First Row
 
-     String summaryHeader = Properties().getPropertyOrDefault(ConfigurationParameters.dbOnlyRowCount, disabledValue);
+    boolean supportsMultiResultSets = dbConnection.getMetaData().supportsMultipleResultSets();
+    if (Properties().isDebug())
+      System.out.println("supportsMultiResultSets:" + supportsMultiResultSets + "; Additional Sets will be added as Columns:" + extend);
 
-     int updateColumnCounter = 1;
-     String updateColumnCounterStr="";
-     boolean moreResultsReceived = false;
-     int updateCount = 0; // set to something <> -1
-     
-     // To avoid an endless loop in case a JDBC driver is badly written we limit the number of loops
-     int l;
-     for(l=0; l < getMaxLoops(); l++){
-        if (resultSetAvailable) {
-          ResultSet res = null;
-          res = stmt.getResultSet();
-          if (null != res){
-            moreResultsReceived = true;
-            convertRsIntoTable(results, res, extend, summaryHeader);
-          }
-        }else{
-          moreResultsReceived = false;
-          updateCount = stmt.getUpdateCount();
-          if (-1 != updateCount && !updateCountHeaderName.equalsIgnoreCase(disabledValue)){
-            results.get(0).add(updateCountHeaderName+ updateColumnCounterStr);
-            results.get(1).add(Integer.toString(updateCount));
-            updateColumnCounterStr = Integer.toString(++updateColumnCounter);
-          }
+    String summaryHeader = Properties().getPropertyOrDefault(ConfigurationParameters.dbOnlyRowCount, disabledValue);
+
+    int updateColumnCounter = 1;
+    String updateColumnCounterStr = "";
+    boolean moreResultsReceived = false;
+    int updateCount = 0; // set to something <> -1
+
+    // To avoid an endless loop in case a JDBC driver is badly written we limit the number of loops
+    int l;
+    for (l = 0; l < getMaxLoops(); l++) {
+      if (resultSetAvailable) {
+        ResultSet res = null;
+        res = stmt.getResultSet();
+        if (null != res) {
+          moreResultsReceived = true;
+          convertRsIntoTable(results, res, extend, summaryHeader);
         }
+      } else {
+        moreResultsReceived = false;
+        updateCount = stmt.getUpdateCount();
+        if (-1 != updateCount && !updateCountHeaderName.equalsIgnoreCase(disabledValue)) {
+          results.get(0).add(updateCountHeaderName + updateColumnCounterStr);
+          results.get(1).add(Integer.toString(updateCount));
+          updateColumnCounterStr = Integer.toString(++updateColumnCounter);
+        }
+      }
 
-        if (!supportsMultiResultSets) break;
-        if (!moreResultsReceived && -1 == updateCount) break;
-        // Get for the next loop
-        resultSetAvailable = stmt.getMoreResults();
-     }
-     if(l>= getMaxLoops()){
-       //The max loop limit was reached, this should never happen so we raise an exception
-       throw new RuntimeException("The command returned more than '" + l +"' recordsets or update count results and execution was aborted by jdbcSlim. " + 
-           "Set the parameter 'jdbcMaxloops' to a higher value to be able to finish your command.");
-     }
-     
-     return results;
+      if (!supportsMultiResultSets) break;
+      if (!moreResultsReceived && -1 == updateCount) break;
+      // Get for the next loop
+      resultSetAvailable = stmt.getMoreResults();
+    }
+    if (l >= getMaxLoops()) {
+      //The max loop limit was reached, this should never happen so we raise an exception
+      throw new RuntimeException("The command returned more than '" + l + "' recordsets or update count results and execution was aborted by jdbcSlim. " +
+        "Set the parameter 'jdbcMaxloops' to a higher value to be able to finish your command.");
+    }
+
+    return results;
   }
 
-  
-  protected void convertRsIntoTable(List<List<String>> resultTable,  ResultSet rs, boolean extend, String summaryHeader) throws SQLException {
+
+  protected void convertRsIntoTable(List<List<String>> resultTable, ResultSet rs, boolean extend, String summaryHeader) throws SQLException {
     ResultSetMetaData rsmd;
     int columnCount;
-    int rowCount =0;
+    int rowCount = 0;
     List<String> oneRow;
     rsmd = rs.getMetaData();
     columnCount = rsmd.getColumnCount();
-    if (Properties().isDebug()) System.out.println("HeaderCount:"+ columnCount) ;
+    if (Properties().isDebug()) System.out.println("HeaderCount:" + columnCount);
 
     boolean summaryOnly = !disabledValue.equalsIgnoreCase(summaryHeader);
 
-    
+
     oneRow = new ArrayList<String>();
-    for (int i = 1; i <= columnCount; i++){
+    for (int i = 1; i <= columnCount; i++) {
       String columnHeader = rsmd.getColumnLabel(i);
-      if (columnHeader == null || Properties().getBooleanPropertyOrDefault(ConfigurationParameters.dbUseColumnName, false)){
+      if (columnHeader == null || Properties().getBooleanPropertyOrDefault(ConfigurationParameters.dbUseColumnName, false)) {
         columnHeader = rsmd.getColumnName(i);
       }
-    	oneRow.add(columnHeader);
-    	if (Properties().isDebug()) System.out.println("Header:"+ i + ":" + columnHeader);
+      oneRow.add(columnHeader);
+      if (Properties().isDebug()) System.out.println("Header:" + i + ":" + columnHeader);
     }
     appendOrExtendRow(resultTable, oneRow, rowCount++, extend, summaryOnly);
-    
-    while(rs.next()){
-    	oneRow = new ArrayList<String>();
-    	for (int i = 1; i <= columnCount; i++){
-    		oneRow.add(rs.getString(i));
-    		if (Properties().isDebug()) System.out.println("Row:"+ i + ":" + rs.getString(i));
-    	}
+
+    while (rs.next()) {
+      oneRow = new ArrayList<String>();
+      for (int i = 1; i <= columnCount; i++) {
+        oneRow.add(rs.getString(i));
+        if (Properties().isDebug()) System.out.println("Row:" + i + ":" + rs.getString(i));
+      }
       appendOrExtendRow(resultTable, oneRow, rowCount++, extend, summaryOnly);
     }
     //rs.close();
-    
-    if(summaryOnly){
-        resultTable.get(0).add(summaryHeader);
-        resultTable.get(1).add(String.valueOf(rowCount-1));
+
+    if (summaryOnly) {
+      resultTable.get(0).add(summaryHeader);
+      resultTable.get(1).add(String.valueOf(rowCount - 1));
     }
   }
 
-  protected List<List<String>> appendOrExtendRow(List<List<String>> resultTable, List<String> oneRow, int rowCount, boolean extend, boolean summaryOnly){
+  protected List<List<String>> appendOrExtendRow(List<List<String>> resultTable, List<String> oneRow, int rowCount, boolean extend, boolean summaryOnly) {
     // If a summary is requested nothing must be done
     if (summaryOnly) return resultTable;
-    
-    if(extend && resultTable.size() > rowCount){
+
+    if (extend && resultTable.size() > rowCount) {
       resultTable.get(rowCount).addAll(oneRow);
-    }else{
+    } else {
       resultTable.add(oneRow);
     }
     return resultTable;
   }
-      
+
   @Override
-	public void beginTable() {
-	  success= openConnection();
-	  if(!success){
-      throw new RuntimeException("No Connection after beginTable: " + rawResult );
-	  }
-	}
-
-	@Override
-	public void endTable() {
-	  if(mustCloseConnection){
-	    if(!closeConnection()){
-	      throw new RuntimeException("Connection close failed in endTable: " + rawResult );
-	    }
-	  }
-	}
-
-	/**
-	 * Use in scripts or scenarios to open a connection
-	 * @return true if the database connection could be opened
-	 */
-	public boolean openConnection(){
-    String dbConnectionName = "";
-    
-    dbConnection = null;
-    
-    dbConnectionName = Properties().getProperty(ConfigurationParameters.dbConnection);
-    if(dbConnectionName == null){
-      mustCloseConnection = true;
-      success= openNewConnection();
-      return success;
+  public void beginTable() {
+    success = openConnection();
+    if (!success) {
+      throw new RuntimeException("No Connection after beginTable: " + rawResult);
     }
-    else{
+  }
+
+  @Override
+  public void endTable() {
+    if (mustCloseConnection) {
+      if (!closeConnection()) {
+        throw new RuntimeException("Connection close failed in endTable: " + rawResult);
+      }
+    }
+  }
+
+  /**
+   * Use in scripts or scenarios to open a connection
+   *
+   * @return true if the database connection could be opened
+   */
+  public boolean openConnection() {
+    String dbConnectionName = "";
+
+    dbConnection = null;
+
+    dbConnectionName = Properties().getProperty(ConfigurationParameters.dbConnection);
+    if (dbConnectionName == null) {
+      mustCloseConnection = true;
+      success = openNewConnection();
+      return success;
+    } else {
       mustCloseConnection = false;
-      if(theConnections.containsKey(dbConnectionName)){
+      if (theConnections.containsKey(dbConnectionName)) {
         dbConnection = theConnections.get(dbConnectionName);
-        success=  (dbConnection != null);
+        success = (dbConnection != null);
         return success;
-      }else{
+      } else {
         success = openNewConnection();
-        if (success){
+        if (success) {
           theConnections.put(dbConnectionName, dbConnection);
-        }else{
+        } else {
           theConnections.put(dbConnectionName, null);
         }
         return success;
       }
-      
+
     }
-	  
-	}
-	  private boolean openNewConnection(){
+
+  }
+
+  private boolean openNewConnection() {
     String jdbcDriver = "";
-    String dbUrl ="";
-    String dbUser ="";
+    String dbUrl = "";
+    String dbUser = "";
     String dbPassword = "";
     String dbPropertiesName = "";
     Boolean success;
-    java.util.Properties dbProperties = null; 
+    java.util.Properties dbProperties = null;
 
     jdbcDriver = Properties().getProperty(ConfigurationParameters.jdbcDriver);
-    dbPropertiesName =Properties().getPropertyOrDefault(ConfigurationParameters.dbProperties, "");
+    dbPropertiesName = Properties().getPropertyOrDefault(ConfigurationParameters.dbProperties, "");
     dbUrl = Properties().getProperty(ConfigurationParameters.dbUrl);
-    dbUser =Properties().getProperty(ConfigurationParameters.dbUser);
+    dbUser = Properties().getProperty(ConfigurationParameters.dbUser);
     dbPassword = Properties().getSecretProperty(ConfigurationParameters.dbPassword);
-    if(!dbPropertiesName.isEmpty()){
-      dbProperties =  Properties().getSubProperties(dbPropertiesName).toProperties();
-      if(jdbcDriver == null || dbProperties == null){
+    if (!dbPropertiesName.isEmpty()) {
+      dbProperties = Properties().getSubProperties(dbPropertiesName).toProperties();
+      if (jdbcDriver == null || dbProperties == null) {
         success = false;
         rawResult = "Db Configuration is not complete. Required are  'jdbcDriver' (" + jdbcDriver + ") 'dbProperties' (" + dbPropertiesName + ")";
         return success;
-        
+
       }
-    }else if (jdbcDriver == null || dbUrl == null || dbUser == null || dbPassword == null){
+    } else if (jdbcDriver == null || dbUrl == null || dbUser == null || dbPassword == null) {
       success = false;
       rawResult = "Db Configuration is not complete. Required are  'jdbcDriver' (" + jdbcDriver + ") 'dbURL' (" + dbUrl + ") 'dbUser' (" + dbUser + ") 'dbPassword'";
       return success;
-        
+
     }
     try {
       Class.forName(jdbcDriver);
@@ -386,30 +384,30 @@ public class SQLCommand extends SheetCommandBase {
       rawResult = "JDBC Driver (" + jdbcDriver + ") not found.";
       return success;
     }
-    if(dbProperties!=null){
+    if (dbProperties != null) {
       try {
-        dbConnection= DriverManager.getConnection(dbUrl, dbProperties);
+        dbConnection = DriverManager.getConnection(dbUrl, dbProperties);
       } catch (SQLException e) {
         e.printStackTrace();
         success = false;
-        rawResult = "Connect failed to db (" + dbUrl + ") with properties from (" + dbPropertiesName + ") :" + e.getMessage() ;
-        dbConnection =null;
+        rawResult = "Connect failed to db (" + dbUrl + ") with properties from (" + dbPropertiesName + ") :" + e.getMessage();
+        dbConnection = null;
         return success;
       }
-      
-    }else{
+
+    } else {
       try {
-        dbConnection= DriverManager.getConnection(dbUrl, dbUser, dbPassword);
+        dbConnection = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
       } catch (SQLException e) {
         e.printStackTrace();
         success = false;
-        rawResult = "Connect failed to db (" + dbUrl + ") as (" + dbUser + ") :" + e.getMessage() ;
-        dbConnection =null;
+        rawResult = "Connect failed to db (" + dbUrl + ") as (" + dbUser + ") :" + e.getMessage();
+        dbConnection = null;
         return success;
       }
     }
     Boolean autoCommit = Properties().getBooleanPropertyOrDefault(ConfigurationParameters.dbAutoCommit, true);
-    if (Properties().isDebug()){
+    if (Properties().isDebug()) {
       Boolean ac2 = null;
       try {
         ac2 = dbConnection.getAutoCommit();
@@ -417,103 +415,106 @@ public class SQLCommand extends SheetCommandBase {
         // TODO Auto-generated catch block
         e1.printStackTrace();
       }
-      System.out.println("Open Connection - autocommit:"+ autoCommit + ":" + ac2 + ":" + command());
+      System.out.println("Open Connection - autocommit:" + autoCommit + ":" + ac2 + ":" + command());
     }
     try {
       dbConnection.setAutoCommit(autoCommit);
     } catch (SQLException e1) {
       success = false;
-      rawResult = "Setting Auto Commit to '"+ autoCommit +"' failed:" + e1.getMessage();
+      rawResult = "Setting Auto Commit to '" + autoCommit + "' failed:" + e1.getMessage();
       resultSheet = null;
       return success;
     }
 
     success = true;
     return success;
-	}
-	
-	/**
-	 * Use in scripts or scenarios to close a connection
-	 * @return true if the database connection could be closed
-	 */
-	public boolean closeConnection(){
+  }
+
+  /**
+   * Use in scripts or scenarios to close a connection
+   *
+   * @return true if the database connection could be closed
+   */
+  public boolean closeConnection() {
     Boolean success = true;
-	   if (dbConnection !=null){
-	      try {
-	        dbConnection.close();
-	      } catch (SQLException e) {
-	        e.printStackTrace();
-	        success = false;
-	        this.success = false;
-	        rawResult = "Close connection failed:" + e.getMessage() ;
-	      }
-	      String dbConnectionName = Properties().getProperty(ConfigurationParameters.dbConnection);
-	      if(dbConnectionName != null){
-	        theConnections.remove(dbConnectionName);
-	      }
+    if (dbConnection != null) {
+      try {
+        dbConnection.close();
+      } catch (SQLException e) {
+        e.printStackTrace();
+        success = false;
+        this.success = false;
+        rawResult = "Close connection failed:" + e.getMessage();
+      }
+      String dbConnectionName = Properties().getProperty(ConfigurationParameters.dbConnection);
+      if (dbConnectionName != null) {
+        theConnections.remove(dbConnectionName);
+      }
 
-	    }
+    }
 
-		return success;
-	}
-	
+    return success;
+  }
+
   /**
    * Use in scripts or scenarios to add a connection
    * to the list of named connections
    */
-	public void addConnection(String key, Connection cnn){
-	  theConnections.put(key, cnn);
-	}
+  public void addConnection(String key, Connection cnn) {
+    theConnections.put(key, cnn);
+  }
 
   /**
    * Use in scripts or scenarios to remove a connection
    * from the list of named connections
    * Close the connection before removing it.
    */
-  public void removeConnection(String key){
+  public void removeConnection(String key) {
     theConnections.remove(key);
   }
 
   /**
    * Only added for demonstration purpose in the user manual
    * Don't use in your applications!
-   * 
+   *
    * @param dbUrl
    * @param dbUser
    * @param dbPassword
    * @return
    * @throws SQLException
    */
-  public Connection testHomeMadeConnection(String dbUrl, String dbUser, String dbPassword) throws SQLException{
+  public Connection testHomeMadeConnection(String dbUrl, String dbUser, String dbPassword) throws SQLException {
     return DriverManager.getConnection(dbUrl, dbUser, dbPassword);
 
   }
 
-    /**
-     * set the login timeout of the jdbc driver
-     * @param dbLoginTimeout number of seconds before connection timeout
-     */
-    public void setLoginTimeout(int dbLoginTimeout){
-        DriverManager.setLoginTimeout(dbLoginTimeout);
-    }
+  /**
+   * set the login timeout of the jdbc driver
+   *
+   * @param dbLoginTimeout number of seconds before connection timeout
+   */
+  public void setLoginTimeout(int dbLoginTimeout) {
+    DriverManager.setLoginTimeout(dbLoginTimeout);
+  }
 
-    /**
-     * get the current login timeout of the jdbc driver
-     * @return login timeout (sec)
-     */
-    public int getLoginTimeout(){
-        int dbLoginTimeout = DriverManager.getLoginTimeout();
-        return dbLoginTimeout;
-    }
+  /**
+   * get the current login timeout of the jdbc driver
+   *
+   * @return login timeout (sec)
+   */
+  public int getLoginTimeout() {
+    int dbLoginTimeout = DriverManager.getLoginTimeout();
+    return dbLoginTimeout;
+  }
 
   private int getMaxLoops() {
-    if (cacheMaxLoops == null){
+    if (cacheMaxLoops == null) {
       String strValue = Properties().getPropertyOrDefault(ConfigurationParameters.jdbcMaxloops, "100");
-      try{
-        cacheMaxLoops=Integer.parseInt(strValue);
-      }catch (NumberFormatException e){
+      try {
+        cacheMaxLoops = Integer.parseInt(strValue);
+      } catch (NumberFormatException e) {
         cacheMaxLoops = 1;
-        throw new RuntimeException("The value set for " + ConfigurationParameters.jdbcMaxloops.toString() + " must be a number. Got '" + strValue + "'", e); 
+        throw new RuntimeException("The value set for " + ConfigurationParameters.jdbcMaxloops.toString() + " must be a number. Got '" + strValue + "'", e);
       }
     }
     return cacheMaxLoops;

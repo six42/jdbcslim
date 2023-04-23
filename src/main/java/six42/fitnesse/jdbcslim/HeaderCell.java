@@ -4,7 +4,7 @@ public class HeaderCell {
   private String sortType;
   private int sortIndex;
   private int sortDirection;
-  
+
   public HeaderCell(String sortType, int sortIndex, int sortDirection) {
     super();
     this.sortType = sortType;
@@ -23,6 +23,6 @@ public class HeaderCell {
   public int getSortDirection() {
     return sortDirection;
   }
-  
-  
+
+
 }
