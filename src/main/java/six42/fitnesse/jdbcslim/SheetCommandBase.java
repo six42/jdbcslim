@@ -61,10 +61,10 @@ public class SheetCommandBase implements SheetCommandInterface {
   }
 
 
-  public List<?> doTable(List<List<String>> ParameterTable) {
+  public List<?> doTable(List<List<String>> parameterTable) {
     try {
       // Always do this
-      return myFixture.doTable(ParameterTable);
+      return myFixture.doTable(parameterTable);
     } catch (Exception e) {
       throw new RuntimeException("message:<<" + e.getMessage() + "\nResult: " + rawResult() + ">>", e);
     }
@@ -225,9 +225,9 @@ public class SheetCommandBase implements SheetCommandInterface {
   }
 
 
-  public List<?> compareSheet(List<List<String>> ParameterTable) {
+  public List<?> compareSheet(List<List<String>> parameterTable) {
     // Always do this
-    return doTable(ParameterTable);
+    return doTable(parameterTable);
   }
 
   @Override

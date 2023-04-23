@@ -116,8 +116,8 @@ public class PropertiesLoader implements PropertiesInterface {
     return storeProperties(props);
     /**
      *  Limitations:  If a multi line tag is not closed at the end than the property is
-     *  					dropped without any error
-     *  			  It is expected that an encrypted value ends always with a bracket
+     *    dropped without any error
+     *    It is expected that an encrypted value ends always with a bracket
      *
      *
      */

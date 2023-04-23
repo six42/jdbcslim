@@ -15,14 +15,14 @@ class SQLStatement {
 
   private String initialCommandString;
   private String finalCommandString;
-  private List<List<String>> inputParamterList;
+  private List<List<String>> inputParameterList;
   private Map<String, String> defaultList;
   private String nullText;
 
   public SQLStatement(String sqlCommand, String nullText) {
     this.initialCommandString = sqlCommand;
     this.nullText = nullText;
-    inputParamterList = new ArrayList<List<String>>();
+    inputParameterList = new ArrayList<List<String>>();
     defaultList = new HashMap<String, String>();
 
     this.finalCommandString = this.initialCommandString;
@@ -63,7 +63,7 @@ class SQLStatement {
         List<String> line = new ArrayList<String>();
         line.add(inputColumnName);
         line.add("I:" + i + ":" + type + scale);
-        inputParamterList.add(line);
+        inputParameterList.add(line);
         i++;
 
         if (defaultValue != null) {
@@ -74,7 +74,7 @@ class SQLStatement {
         List<String> line = new ArrayList<String>();
         line.add(outputColumnName);
         line.add("O:" + o + ":" + type + scale);
-        inputParamterList.add(line);
+        inputParameterList.add(line);
         o++;
       }
       m.appendReplacement(sb, "?");
@@ -94,7 +94,7 @@ class SQLStatement {
         .getSubProperties(parameterName);
       List<List<String>> table = queryParameters.toTable();
       table.remove(/* header line */0);
-      inputParamterList.addAll(table);
+      inputParameterList.addAll(table);
     }
   }
 
@@ -119,11 +119,11 @@ class SQLStatement {
 
   public SortedMap<Integer, String> setInputParameters(CallableStatement cstmt,
                                                        SheetCommandInterface sqlCommand) {
-    SortedMap<Integer, String> outputParamterMap = new TreeMap<Integer, String>();
-    for (int i = 0; i < inputParamterList.size(); i++) {
+    SortedMap<Integer, String> outputParameterMap = new TreeMap<Integer, String>();
+    for (int i = 0; i < inputParameterList.size(); i++) {
       try {
-        String columnName = inputParamterList.get(i).get(0);
-        String[] paramValues = inputParamterList.get(i).get(1).split(":");
+        String columnName = inputParameterList.get(i).get(0);
+        String[] paramValues = inputParameterList.get(i).get(1).split(":");
         boolean inParameter = paramValues.length < 1 ? false : paramValues[0]
           .toUpperCase().contains("I");
         boolean outParameter = paramValues.length < 1 ? false : paramValues[0]
@@ -164,20 +164,20 @@ class SQLStatement {
             cstmt.registerOutParameter(parameterIndex, sqlType);
           else
             cstmt.registerOutParameter(parameterIndex, sqlType, scale);
-          outputParamterMap.put(parameterIndex, columnName);
+          outputParameterMap.put(parameterIndex, columnName);
         }
       } catch (NumberFormatException e) {
         throw new RuntimeException("Failed processing Query Parameter:"
-          + inputParamterList.get(i).get(0) + "="
-          + inputParamterList.get(i).get(1), e);
+          + inputParameterList.get(i).get(0) + "="
+          + inputParameterList.get(i).get(1), e);
       } catch (SQLException e) {
         throw new RuntimeException("Failed setting Query Parameter:"
-          + inputParamterList.get(i).get(0) + "="
-          + inputParamterList.get(i).get(1), e);
+          + inputParameterList.get(i).get(0) + "="
+          + inputParameterList.get(i).get(1), e);
       }
 
     }
-    return outputParamterMap;
+    return outputParameterMap;
   }
 
 }

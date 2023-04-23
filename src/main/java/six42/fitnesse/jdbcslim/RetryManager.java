@@ -6,7 +6,7 @@ public class RetryManager {
 
   private boolean allFieldsPassedNoRetry = true;
   private long maxTotalTimeMs;
-  private long intervallTimeMs;
+  private long intervalTimeMs;
   private long startTimeMs;
   private long retryCount = 0;
   private long maxRetryCount = 0;
@@ -35,7 +35,7 @@ public class RetryManager {
     if (maxRetryCount <= 0) maxRetryCount = 1;
     this.maxRetryCount = maxRetryCount;
 
-    this.intervallTimeMs = this.maxTotalTimeMs / this.maxRetryCount;
+    this.intervalTimeMs = this.maxTotalTimeMs / this.maxRetryCount;
 
     this.startTimeMs = Clock.currentTimeInMillis();
     this.loopStartTimeMs = startTimeMs;
@@ -59,10 +59,10 @@ public class RetryManager {
 
 
     // another run is required -> slow down the process 
-    long sleepTimeMs = intervallTimeMs - (endTimeMs - loopStartTimeMs);
+    long sleepTimeMs = intervalTimeMs - (endTimeMs - loopStartTimeMs);
     if (sleepTimeMs > 0)
       try {
-        Thread.sleep(intervallTimeMs);
+        Thread.sleep(intervalTimeMs);
       } catch (InterruptedException e) {
         // Should not happen - print and ignore
         e.printStackTrace();
@@ -90,8 +90,8 @@ public class RetryManager {
 
   public String toString(String context) {
     return "RetryManager " + context + " [allFieldsPassedNoRetry=" + allFieldsPassedNoRetry
-      + ", maxTotalTimeMs=" + maxTotalTimeMs + ", intervallTimeMs="
-      + intervallTimeMs + ", startTimeMs=" + startTimeMs + ", retryCount="
+      + ", maxTotalTimeMs=" + maxTotalTimeMs + ", intervalTimeMs="
+      + intervalTimeMs + ", startTimeMs=" + startTimeMs + ", retryCount="
       + retryCount + ", maxRetryCount=" + maxRetryCount
       + ", loopStartTimeMs=" + loopStartTimeMs + "]";
   }

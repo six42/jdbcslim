@@ -30,35 +30,35 @@ public class SheetFixture {
   }
 
 
-  public List<List<String>> doTable(List<List<String>> ParameterTable) {
+  public List<List<String>> doTable(List<List<String>> parameterTable) {
     List<List<String>> result = null;
-    List<String> Header = null;
+    List<String> header = null;
     boolean hasParameters = false;
-    boolean hasHeader = (ParameterTable.size() >= 1);
+    boolean hasHeader = (parameterTable.size() >= 1);
 
 
     if (hasHeader) {
-      Header = ParameterTable.get(0);
-      hasParameters = HeaderLine.hasHeaderParameters(Header);
+      header = parameterTable.get(0);
+      hasParameters = HeaderLine.hasHeaderParameters(header);
     }
 
     // If the output contains QUERY than we execute as a single query and don't check for parameters
     if (commandExecuter.Properties().getProperty("query") != null) hasParameters = false;
 
-    List<List<String>> expextedTable = replaceNullInExpected(ParameterTable);
+    List<List<String>> expectedTable = replaceNullInExpected(parameterTable);
 
-    commandExecuter.table(expextedTable);
+    commandExecuter.table(expectedTable);
     commandExecuter.beginTable();
 
 
     for (retry = new RetryManager(commandExecuter.Properties().getPropertyOrDefault(ConfigurationParameters.RETRY, "")); retry.shouldTryAgain(); ) {
       if (!hasParameters) {
         // Select Table Command
-        result = processComandOnceAndCompareToExpected(expextedTable, hasHeader);
+        result = processCommandOnceAndCompareToExpected(expectedTable, hasHeader);
 
       } else {
 
-        result = processCommandLineByLine(expextedTable, Header);
+        result = processCommandLineByLine(expectedTable, header);
       }
     }
     if (commandExecuter.Properties().isDebug()) System.out.println(retry.toString());
@@ -73,8 +73,8 @@ public class SheetFixture {
   }
 
 
-  protected List<List<String>> processComandOnceAndCompareToExpected(
-    List<List<String>> ParameterTable, boolean hasHeader) {
+  protected List<List<String>> processCommandOnceAndCompareToExpected(
+    List<List<String>> parameterTable, boolean hasHeader) {
 
     List<List<String>> result = new ArrayList<List<String>>();
 
@@ -86,8 +86,8 @@ public class SheetFixture {
       if (!hasHeader) {
         result = commandExecuter.resultSheet();
       } else {
-        // TODO If expected has a Header than check the order and values of the same
-        result = compareTableWithSort(ParameterTable, commandExecuter.resultSheet(), (commandExecuter.Properties().getProperty("sort") != null));
+        // TODO If expected has a header than check the order and values of the same
+        result = compareTableWithSort(parameterTable, commandExecuter.resultSheet(), (commandExecuter.Properties().getProperty("sort") != null));
       }
     } else {
       List<String> line = new ArrayList<String>();
@@ -100,47 +100,47 @@ public class SheetFixture {
 
 
   private List<List<String>> processCommandLineByLine(
-    List<List<String>> ParameterTable, List<String> Header) {
-    String LineCommand;
-    List<String> Line;
+    List<List<String>> parameterTable, List<String> header) {
+    String lineCommand;
+    List<String> line;
     List<String> resultHeader;
     List<List<String>> result = new ArrayList<List<String>>();
 
     // Copy for A) result and B) to add additional columns if required
-    resultHeader = new ArrayList<String>(Header);
+    resultHeader = new ArrayList<String>(header);
 
     // Get InputDefaults if defined
     String defaultName = commandExecuter.Properties().getProperty(ConfigurationParameters.inputDefaults);
     PropertiesLoader defaults = (defaultName == null) ? null : commandExecuter.Properties().getSubProperties(defaultName);
 
-    // Start at Line 1, after the Header
-    for (int l = 1; l < ParameterTable.size(); l++) {
+    // Start at line 1, after the header
+    for (int l = 1; l < parameterTable.size(); l++) {
 
       commandExecuter.reset();
 
-      Line = ParameterTable.get(l);
-      LineCommand = _rawCommand;
-      for (int p = 0; p < Header.size(); p++) {
+      line = parameterTable.get(l);
+      lineCommand = _rawCommand;
+      for (int p = 0; p < header.size(); p++) {
         // If there are less parameter values than variables then add empty values
         // to avoid errors
-        if (p >= Line.size()) Line.add("");
-        String rawColumnName = Header.get(p);
+        if (p >= line.size()) line.add("");
+        String rawColumnName = header.get(p);
         if (HeaderLine.isInputColumn(rawColumnName)) {
-          String value = Line.get(p);
+          String value = line.get(p);
           // Value could be null convert into a string  to avoid null pointer exception in replace for command
           String sqlValue = (value == null) ? "null" : value;
-          if (l == ParameterTable.size() - 1) {
+          if (l == parameterTable.size() - 1) {
             if (Pattern
               .compile(
                 "(?i)" + _pre_fix
                   + HeaderLine.plainColumnName(rawColumnName) + _post_fix)
-              .matcher(LineCommand).find(0)) {
+              .matcher(lineCommand).find(0)) {
               // Dirty hack to add these to the list of used headers
               commandExecuter.get(HeaderLine.plainColumnName(rawColumnName));
             }
           }
           try {
-            LineCommand = LineCommand.replaceAll("(?i)" + _pre_fix + HeaderLine.plainColumnName(rawColumnName) + _post_fix, Matcher.quoteReplacement(sqlValue));
+            lineCommand = lineCommand.replaceAll("(?i)" + _pre_fix + HeaderLine.plainColumnName(rawColumnName) + _post_fix, Matcher.quoteReplacement(sqlValue));
           } catch (IllegalArgumentException e) {
             throw new RuntimeException("Replacement failed. The given value '" + sqlValue + "' can't be used", e);
           }
@@ -148,35 +148,35 @@ public class SheetFixture {
           commandExecuter.set(HeaderLine.plainColumnName(rawColumnName), value);
         }
       }
-      LineCommand = replaceAllDefaults(LineCommand, defaults, _pre_fix, _post_fix);
+      lineCommand = replaceAllDefaults(lineCommand, defaults, _pre_fix, _post_fix);
 
       // Execute the command
-      commandExecuter.execute(LineCommand);
+      commandExecuter.execute(lineCommand);
 
       if (commandExecuter.success()) {
         List<List<String>> LineResultSheet = commandExecuter.resultSheet();
         if (LineResultSheet.size() == 0) {
           // Command without results
-          Line.add("pass:" + LineCommand);
+          line.add("pass:" + lineCommand);
         }
         if (LineResultSheet.size() != 2) {
-          Line.add("fail:" + LineCommand);
-          Line.add("fail:Got " + LineResultSheet.size() + " result rows; expected exactly one: " + commandExecuter.rawResult());
+          line.add("fail:" + lineCommand);
+          line.add("fail:Got " + LineResultSheet.size() + " result rows; expected exactly one: " + commandExecuter.rawResult());
         } else {
-          Line = compareLine(resultHeader, LineResultSheet.get(0), Line, LineResultSheet.get(1));
+          line = compareLine(resultHeader, LineResultSheet.get(0), line, LineResultSheet.get(1));
         }
       } else {
-        Line.add("fail:" + LineCommand);
-        Line.add("fail:" + commandExecuter.rawResult());
+        line.add("fail:" + lineCommand);
+        line.add("fail:" + commandExecuter.rawResult());
       }
 
-      result.add(Line);
+      result.add(line);
 
     }
-    // Color the Header Column	and update the total result set
+    // Color the header Column and update the total result set
     result.add(
       0,
-      HeaderLine.formatHeader(Header, resultHeader,
+      HeaderLine.formatHeader(header, resultHeader,
         commandExecuter.getUsedColumnNames(), _rawCommand,
         commandExecuter.Properties()));
 
@@ -198,12 +198,12 @@ public class SheetFixture {
 
 
   /**
-   * @param expectedHeader the resulting Header Line this is an in/out parameter. The Header might get extended in the procedure
+   * @param expectedHeader the resulting header line this is an in/out parameter. The header might get extended in the procedure
    *                       if actual has columns which expected doesn't have
    * @param actualHeader   The header of the result set of the executed command
    * @param expectedLine   The data of an expected line
    * @param actualLine     One line of the result set of the executed command
-   * @return the resulting Line generated by comparing expected and actual with formatting. Column with the same name are compared.
+   * @return the resulting line generated by comparing expected and actual with formatting. Column with the same name are compared.
    * The names are taken from the header.
    */
   public List<String> compareLine(List<String> expectedHeader, List<String> actualHeader, List<String> expectedLine, List<String> actualLine) {
@@ -222,11 +222,11 @@ public class SheetFixture {
 
     for (int i = 0; i < H.length; i++) {
       if (i < maxActual) {
-        int LineResultIndex = H[i];
+        int lineResultIndex = H[i];
         String expected = expectedLine.size() > i ? expectedLine.get(i) : "";
         if (expected == null) expected = _nullStrOut;
-        if (LineResultIndex != -1) { // There is an actual output column with the same name
-          String actual = actualLine.size() > LineResultIndex ? actualLine.get(LineResultIndex) : "";
+        if (lineResultIndex != -1) { // There is an actual output column with the same name
+          String actual = actualLine.size() > lineResultIndex ? actualLine.get(lineResultIndex) : "";
           if (actual == null) actual = _nullStrOut;
           if (expectedLine.size() <= i) {
             // Additional Value
@@ -246,7 +246,7 @@ public class SheetFixture {
               lineResult.add("pass:" + str.getMessage());
             } else {
               retry.runFailed();
-              if (actualLine.size() <= LineResultIndex) {
+              if (actualLine.size() <= lineResultIndex) {
                 // Missing Actual Column, mark cell as missing
                 lineResult.add("fail:[-]" + expected);
               } else {
@@ -265,12 +265,12 @@ public class SheetFixture {
         }
       } else {
         // Add Additional Output columns which have no matching expected
-        int LineResultIndex = H[i];
-        if (LineResultIndex == -1) {
+        int lineResultIndex = H[i];
+        if (lineResultIndex == -1) {
           // Extra Cell
 
           // Safety check on index, expected to never see the else part text
-          String actual = actualLine.size() > i - maxActual ? actualLine.get(i - maxActual) : "Actual Header without actual Data?";
+          String actual = actualLine.size() > i - maxActual ? actualLine.get(i - maxActual) : "Actual header without actual Data?";
           lineResult.add("fail:Extra:" + actual);
           retry.runFailed();
           expectedHeader.add(actualHeader.get(i - maxActual));
@@ -393,7 +393,7 @@ public class SheetFixture {
       result.add(compareLine(expectedHeader, actualHeader, expected.get(e), emptyRow));
       e++;
     }
-    //Color the Header and add to result set
+    //Color the header and add to result set
     result.add(0, HeaderLine.formatHeader(expected.get(0), expectedHeader));
     return result;
   }

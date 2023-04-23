@@ -116,7 +116,7 @@ public class SQLCommand extends SheetCommandBase {
 
     cstmt = dbConnection.prepareCall(theStatement.sqlCommand());
 
-    SortedMap<Integer, String> outputParamterMap = theStatement
+    SortedMap<Integer, String> outputParameterMap = theStatement
       .setInputParameters(cstmt, this);
 
     TimeMeasurement executionTime = (new TimeMeasurement()).start();
@@ -156,7 +156,7 @@ public class SQLCommand extends SheetCommandBase {
       }
     }
 
-    getOutputParameterValues(cstmt, resultTable, outputParamterMap);
+    getOutputParameterValues(cstmt, resultTable, outputParameterMap);
 
     cstmt.close();
 
@@ -174,13 +174,13 @@ public class SQLCommand extends SheetCommandBase {
   /**
    * @param cstmt
    * @param resultTable
-   * @param outputParamterMap - the map keys are the positions of the output parameters in the CallableStatement
+   * @param outputParameterMap - the map keys are the positions of the output parameters in the CallableStatement
    *                          - the map values are the names of the column headers
    */
   protected void getOutputParameterValues(CallableStatement cstmt,
                                           List<List<String>> resultTable,
-                                          final SortedMap<Integer, String> outputParamterMap) {
-    for (Map.Entry<Integer, String> entry : outputParamterMap.entrySet()) {
+                                          final SortedMap<Integer, String> outputParameterMap) {
+    for (Map.Entry<Integer, String> entry : outputParameterMap.entrySet()) {
       String value = "";
       try {
         Object o = cstmt.getObject(entry.getKey());

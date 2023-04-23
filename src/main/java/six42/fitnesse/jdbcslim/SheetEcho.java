@@ -16,15 +16,15 @@ public class SheetEcho implements SheetCommandInterface {
   private PropertiesLoader loader = new PropertiesLoader();
 
 
-  public SheetEcho(List<List<String>> ParameterTable) throws FileNotFoundException, IOException {
+  public SheetEcho(List<List<String>> parameterTable) throws FileNotFoundException, IOException {
     loader.loadFromString(ConfigurationParameters.QUERY.toString());
-    resultSheet = ParameterTable;
+    resultSheet = parameterTable;
     myFixture = new SheetFixture("", this);
   }
 
-  public List<?> doTable(List<List<String>> ParameterTable) {
+  public List<?> doTable(List<List<String>> parameterTable) {
     // Always do this
-    return myFixture.doTable(ParameterTable);
+    return myFixture.doTable(parameterTable);
   }
 
   @Override
