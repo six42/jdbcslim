@@ -161,7 +161,7 @@ public class SheetFixture {
 					// Command without results
 					Line.add("pass:" + LineCommand);
 				}
-				if (LineResultSheet.size() !=2){
+				if (LineResultSheet.size() !=1){
 					Line.add("fail:" + LineCommand);
 					Line.add("fail:Got " + LineResultSheet.size() + " result rows; expected exactly one: "+ commandExecuter.rawResult());
 				}else{
